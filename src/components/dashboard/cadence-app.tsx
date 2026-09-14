@@ -15,7 +15,6 @@ import {
   GitCommitHorizontal,
   Link2,
   Search,
-  Share2,
   Trophy,
 } from "lucide-react";
 import { getCalendar, getDayCommits } from "@/lib/github/api";
@@ -277,7 +276,7 @@ export function CadenceApp({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, [calendar, selectedDate, year, routeUsername]);
 
   async function copyLink() {
     const url = profilePermalink({
@@ -383,33 +382,20 @@ export function CadenceApp({
             </Button>
           </form>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <Button type="button" variant="outline" size="sm" onClick={copyLink}>
             {copied ? <Check /> : <Link2 />}
             {copied ? "Copied" : "Copy link"}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={shareOnX}>
-            <Share2 />
-            Share
-          </Button>
-          {calendar ? <ExportMenu calendar={calendar} year={year} /> : null}
-          <Button asChild variant="outline" size="sm">
-            <Link
-              to="/u/$username/$year"
-              params={{
-                username: shareLogin,
-                year: String(year ?? currentYear()),
-              }}
-            >
-              Recap
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/compare">Compare</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/docs">Docs</Link>
-          </Button>
+          {calendar ? (
+            <ExportMenu calendar={calendar} year={year} onShareX={shareOnX} />
+          ) : null}
+          <Link
+            to="/docs"
+            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Docs
+          </Link>
           <p className="text-xs text-muted-foreground">
             Try{" "}
             {FEATURED.map((login, i) => (
@@ -430,26 +416,47 @@ export function CadenceApp({
       </header>
 
       {calendar?.profile ? (
-        <div className="flex items-center gap-3">
-          <img
-            src={calendar.profile.avatarUrl}
-            alt=""
-            className="size-10 rounded-full outline outline-1 -outline-offset-1 outline-foreground/10"
-          />
-          <div className="min-w-0">
-            <a
-              href={calendar.profile.htmlUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-foreground hover:underline"
-            >
-              {calendar.profile.name ?? calendar.profile.login}
-            </a>
-            <p className="truncate text-sm text-muted-foreground">
-              @{calendar.profile.login}
-              {calendar.profile.bio ? ` · ${calendar.profile.bio}` : ""}
-            </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src={calendar.profile.avatarUrl}
+              alt=""
+              className="size-10 rounded-full outline outline-1 -outline-offset-1 outline-foreground/10"
+            />
+            <div className="min-w-0">
+              <a
+                href={calendar.profile.htmlUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-foreground hover:underline"
+              >
+                {calendar.profile.name ?? calendar.profile.login}
+              </a>
+              <p className="truncate text-sm text-muted-foreground">
+                @{calendar.profile.login}
+                {calendar.profile.bio ? ` · ${calendar.profile.bio}` : ""}
+              </p>
+            </div>
           </div>
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            <Link
+              to="/u/$username/$year"
+              params={{
+                username: shareLogin,
+                year: String(year ?? currentYear()),
+              }}
+              className="text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Recap
+            </Link>
+            <Link
+              to="/compare"
+              search={{ a: shareLogin }}
+              className="text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Compare
+            </Link>
+          </nav>
         </div>
       ) : calendarPending ? (
         <div className="flex items-center gap-3">

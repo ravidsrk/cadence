@@ -31,9 +31,9 @@ export const DOC_SECTIONS: DocSection[] = [
         items: [
           "Home opens on a default public profile.",
           `Every public GitHub user has a shareable page at ${SITE_ORIGIN}/u/{username}.`,
-          "Copy link or share to X from the header.",
-          "Export a share card, heatmap, CSV, README badge, or embed.",
-          "Compare two users, or open a year recap at /u/{username}/{year}.",
+          "Copy link from the header. Share opens X plus card, badge, and export.",
+          "Recap and Compare sit next to the profile, not in the header.",
+          "Compare two users with a year toggle, or open a year recap at /u/{username}/{year}.",
         ],
       },
     ],
@@ -192,8 +192,9 @@ export const DOC_SECTIONS: DocSection[] = [
           `${SITE_ORIGIN}/u/ravidsrk?y=2025 — calendar year 2025.`,
           `${SITE_ORIGIN}/u/ravidsrk/2025 — year recap for 2025.`,
           `${SITE_ORIGIN}/compare/gaearon/yyx990803 — two calendars side by side.`,
+          `${SITE_ORIGIN}/compare/gaearon/yyx990803?y=2025 — the same pair for calendar year 2025.`,
           "Copy link writes the current profile, day, and year to the clipboard.",
-          "Share opens an X compose window with streak, range total, and the permalink.",
+          "Share copies export items and opens an X compose window with streak, range total, and the permalink.",
         ],
       },
     ],
@@ -204,7 +205,7 @@ export const DOC_SECTIONS: DocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Export is under the Export menu on a loaded profile. All of these are the same public calendar Cadence already shows.",
+        text: "Share is on a loaded profile. It covers X, the share card, heatmap, CSV, README badge, and embed. All of these are the same public calendar Cadence already shows.",
       },
       {
         type: "ul",
@@ -233,7 +234,7 @@ export const DOC_SECTIONS: DocSection[] = [
       },
       {
         type: "p",
-        text: "Compare loads two last-12-month calendars. It uses two heatmap fetches, so GitHub may rate-limit if you hammer it.",
+        text: "Compare loads two calendars. Switch Last 12 months or a calendar year; the strip on top names who leads on volume, streak, and consistency. Two heatmap fetches, so GitHub may rate-limit if you hammer it.",
       },
     ],
   },

@@ -37,3 +37,7 @@ Heatmap SVG and a JSON calendar live under `/api/heatmap/USERNAME.svg` and `/api
 ### What is a year recap?
 
 `/u/USERNAME/2025` is that calendar year: map, weekday rhythm, pauses, public repo languages, and public search totals for commits vs pull requests. Languages are the primary language on recently pushed public repos, not commit volume.
+
+### How does Compare work?
+
+`/compare/USER_A/USER_B` loads two public calendars. Add `?y=2025` for a calendar year. The strip on top names who leads on volume, streak, and consistency. From a profile, Compare prefills that username.

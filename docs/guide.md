@@ -38,8 +38,9 @@ Profile URLs are safe to send. They only encode a public username and optional d
 - [git-cadence.grok.me/u/ravidsrk?y=2025](https://git-cadence.grok.me/u/ravidsrk?y=2025) — calendar year 2025
 - [git-cadence.grok.me/u/ravidsrk/2025](https://git-cadence.grok.me/u/ravidsrk/2025) — year recap
 - [git-cadence.grok.me/compare/gaearon/yyx990803](https://git-cadence.grok.me/compare/gaearon/yyx990803) — two calendars
+- [git-cadence.grok.me/compare/gaearon/yyx990803?y=2025](https://git-cadence.grok.me/compare/gaearon/yyx990803?y=2025) — the same pair for 2025
 
-**Copy link** writes the current profile, day, and year to the clipboard. **Share** opens an X compose window with streak, range total, and the permalink. **Export** downloads a share card, heatmap, or CSV, and copies a README badge or embed snippet.
+**Copy link** writes the current profile, day, and year to the clipboard. **Share** opens X, plus card / heatmap / CSV / badge / embed. Recap and Compare sit next to the loaded profile.
 
 Use ← → to move the selected day. Home and End jump to the ends of the range.
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { compareDelta } from "./compare.ts";
 import { calendarCsv } from "./csv.ts";
 import { quietStats } from "./gaps.ts";
 import { compactCount, escapeXml, shiftDate } from "./layout.ts";
@@ -70,5 +71,20 @@ describe("exports", () => {
       escapeXml('a&b<"c"'),
       "a" + "&" + "amp;" + "b" + "&" + "lt;" + "&" + "quot;" + "c" + "&" + "quot;",
     );
+  });
+});
+
+describe("compareDelta", () => {
+  it("names the leader and formats the gap", () => {
+    const rows = compareDelta(
+      { login: "gaearon", total: 12000, streak: 12, consistency: 0.8 },
+      { login: "yyx990803", total: 9000, streak: 34, consistency: 0.8 },
+    );
+    assert.equal(rows[0]?.leader, "left");
+    assert.equal(rows[0]?.note, "gaearon +3,000");
+    assert.equal(rows[1]?.leader, "right");
+    assert.equal(rows[1]?.note, "yyx990803 +22d");
+    assert.equal(rows[2]?.leader, "tie");
+    assert.equal(rows[2]?.note, "tied");
   });
 });

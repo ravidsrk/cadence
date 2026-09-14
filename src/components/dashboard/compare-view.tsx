@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { compareDelta } from "@/lib/github/compare";
 import { consistency } from "@/lib/github/insights";
 import { quietStats } from "@/lib/github/gaps";
 import { isGithubFnError, type CalendarPayload, type GithubFnError } from "@/lib/github/types";
@@ -7,17 +8,31 @@ import { normalizeUsername } from "@/lib/github/username";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Heatmap } from "./heatmap";
+import { cn } from "@/lib/utils";
 
 function formatCount(n: number) {
   return n.toLocaleString("en-IN");
 }
 
+function currentYear() {
+  return new Date().getFullYear();
+}
+
+const YEAR_OPTIONS: Array<number | undefined> = [
+  undefined,
+  currentYear(),
+  currentYear() - 1,
+  currentYear() - 2,
+];
+
 export function CompareForm({
   leftDefault = "",
   rightDefault = "",
+  year,
 }: {
   leftDefault?: string;
   rightDefault?: string;
+  year?: number;
 }) {
   const navigate = useNavigate();
   const [left, setLeft] = useState(leftDefault);
@@ -40,6 +55,7 @@ export function CompareForm({
     void navigate({
       to: "/compare/$a/$b",
       params: { a, b },
+      search: year ? { y: year } : {},
     });
   }
 
@@ -78,12 +94,44 @@ export function CompareView({
   b,
   left,
   right,
+  year,
 }: {
   a: string;
   b: string;
   left: CalendarPayload | GithubFnError;
   right: CalendarPayload | GithubFnError;
+  year?: number;
 }) {
+  const navigate = useNavigate();
+  const rangeLabel = year ? String(year) : "Last 12 months";
+  const leftOk = !isGithubFnError(left);
+  const rightOk = !isGithubFnError(right);
+  const delta =
+    leftOk && rightOk
+      ? compareDelta(
+          {
+            login: left.profile.login,
+            total: left.stats.total,
+            streak: left.stats.currentStreak,
+            consistency: consistency(left.days).activeRatio,
+          },
+          {
+            login: right.profile.login,
+            total: right.stats.total,
+            streak: right.stats.currentStreak,
+            consistency: consistency(right.days).activeRatio,
+          },
+        )
+      : null;
+
+  function pickYear(next: number | undefined) {
+    void navigate({
+      to: "/compare/$a/$b",
+      params: { a, b },
+      search: next ? { y: next } : {},
+    });
+  }
+
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -95,19 +143,70 @@ export function CompareView({
             {a} vs {b}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Last 12 months of public contribution calendars.
+            {rangeLabel} of public contribution calendars.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/">Dashboard</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/docs">Docs</Link>
-          </Button>
-        </div>
+        <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <Link
+            to="/"
+            className="text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/docs"
+            className="text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Docs
+          </Link>
+        </nav>
       </header>
-      <CompareForm leftDefault={a} rightDefault={b} />
+      <CompareForm leftDefault={a} rightDefault={b} year={year} />
+      <div className="flex flex-wrap gap-2">
+        {YEAR_OPTIONS.map((y) => {
+          const label = y ? String(y) : "Last 12 months";
+          const active = year === y;
+          return (
+            <Button
+              key={label}
+              type="button"
+              size="sm"
+              variant={active ? "default" : "outline"}
+              onClick={() => pickYear(y)}
+            >
+              {label}
+            </Button>
+          );
+        })}
+      </div>
+      {delta ? (
+        <section className="grid gap-3 sm:grid-cols-3">
+          {delta.map((row) => (
+            <div
+              key={row.key}
+              className="rounded-2xl bg-card p-4 shadow-[var(--shadow-border)] sm:p-5"
+            >
+              <p className="text-xs tracking-wide text-muted-foreground uppercase">
+                {row.label}
+              </p>
+              <p className="mt-2 font-mono text-lg tabular-nums">
+                {row.leftValue}
+                <span className="text-muted-foreground"> / {row.rightValue}</span>
+              </p>
+              <p
+                className={cn(
+                  "mt-1 text-sm",
+                  row.leader === "tie"
+                    ? "text-muted-foreground"
+                    : "text-foreground",
+                )}
+              >
+                {row.note}
+              </p>
+            </div>
+          ))}
+        </section>
+      ) : null}
       <section className="grid gap-4 lg:grid-cols-2">
         <CompareColumn username={a} calendar={left} />
         <CompareColumn username={b} calendar={right} />

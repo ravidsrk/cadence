@@ -5,7 +5,6 @@ import { quietStats } from "@/lib/github/gaps";
 import { isGithubFnError } from "@/lib/github/types";
 import type { RecapLoaderData } from "@/lib/github/load";
 import { SITE_ORIGIN } from "@/lib/site";
-import { Button } from "@/components/ui/button";
 import { ExportMenu } from "./export-menu";
 import { Heatmap } from "./heatmap";
 import { QuietPanel } from "./quiet-panel";
@@ -44,24 +43,30 @@ export function RecapView({ data }: { data: RecapLoaderData }) {
             Public GitHub shipping year. Safe to share.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
           {calendar ? <ExportMenu calendar={calendar} year={data.year} /> : null}
-          <Button asChild variant="outline" size="sm">
-            <Link
-              to="/u/$username"
-              params={{ username: login }}
-              search={{ y: data.year }}
-            >
-              Day view
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/compare">Compare</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/docs">Docs</Link>
-          </Button>
-        </div>
+          <Link
+            to="/u/$username"
+            params={{ username: login }}
+            search={{ y: data.year }}
+            className="text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Day view
+          </Link>
+          <Link
+            to="/compare"
+            search={{ a: login }}
+            className="text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Compare
+          </Link>
+          <Link
+            to="/docs"
+            className="text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Docs
+          </Link>
+        </nav>
       </header>
 
       {isGithubFnError(data.calendar) ? (

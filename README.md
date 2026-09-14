@@ -50,4 +50,4 @@ TanStack Start, React 19, Tailwind v4, TanStack Query, Recharts.
 
 ## License
 
-MIT
+MIT. See [LICENSE](./LICENSE).

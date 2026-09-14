@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CompareForm } from "@/components/dashboard/compare-view";
-import { Button } from "@/components/ui/button";
+import { validateCompareHomeSearch } from "@/lib/github/search";
 
 export const Route = createFileRoute("/compare/")({
+  validateSearch: (search: Record<string, unknown>) =>
+    validateCompareHomeSearch(search),
   head: () => ({
     meta: [
       { title: "Compare · Cadence" },
@@ -16,6 +18,7 @@ export const Route = createFileRoute("/compare/")({
 });
 
 function CompareHome() {
+  const search = Route.useSearch();
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -31,11 +34,14 @@ function CompareHome() {
             only.
           </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/">Back to dashboard</Link>
-        </Button>
+        <Link
+          to="/"
+          className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+        >
+          Back to dashboard
+        </Link>
       </header>
-      <CompareForm />
+      <CompareForm leftDefault={search.a ?? ""} />
     </div>
   );
 }

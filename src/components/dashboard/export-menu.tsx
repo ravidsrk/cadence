@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Check, Download } from "lucide-react";
+import { Check, Download, Share2 } from "lucide-react";
 import { calendarCsv, calendarJson } from "@/lib/github/csv";
 import { downloadSvgAsPng, downloadText } from "@/lib/github/download";
-import { badgeSvg, heatmapSvg, shareCardSvg } from "@/lib/github/svg";
+import { heatmapSvg, shareCardSvg } from "@/lib/github/svg";
 import { SITE_ORIGIN } from "@/lib/site";
 import type { CalendarPayload } from "@/lib/github/types";
 import { Button } from "@/components/ui/button";
@@ -15,14 +15,17 @@ import {
 export function ExportMenu({
   calendar,
   year,
+  onShareX,
 }: {
   calendar: CalendarPayload;
   year?: number;
+  onShareX?: () => void;
 }) {
   const [copied, setCopied] = useState<string | null>(null);
   const login = calendar.profile.login;
   const embedQuery = year ? `?y=${year}` : "";
   const apiQuery = year ? `?year=${year}` : "";
+  const shareMode = Boolean(onShareX);
 
   async function copy(label: string, value: string) {
     try {
@@ -38,12 +41,18 @@ export function ExportMenu({
     <Popover>
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" size="sm">
-          <Download />
-          Export
+          {shareMode ? <Share2 /> : <Download />}
+          {shareMode ? "Share" : "Export"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-2">
         <div className="flex flex-col">
+          {onShareX ? (
+            <>
+              <Action label="Share on X" onClick={onShareX} />
+              <div className="my-1 h-px bg-border" />
+            </>
+          ) : null}
           <Action
             label="Share card (SVG)"
             onClick={() =>
