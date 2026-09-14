@@ -36,6 +36,7 @@ import {
   type DayCount,
 } from "@/lib/github/types";
 import { normalizeUsername } from "@/lib/github/username";
+import { SITE_ORIGIN } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -681,8 +682,13 @@ export function CadenceApp({
         Cadence reads the public GitHub contribution graph and public commit
         search. Private work can still fill heatmap squares without appearing in
         the log. Profiles live at{" "}
-        <span className="font-mono text-foreground/80">/u/username</span> and
-        are safe to share.{" "}
+        <a
+          href={`${SITE_ORIGIN}/u/ravidsrk`}
+          className="font-mono text-foreground/80 hover:underline"
+        >
+          git-cadence.grok.me/u/username
+        </a>{" "}
+        and are safe to share.{" "}
         <Link to="/docs" className="text-foreground/80 hover:underline">
           How Cadence counts
         </Link>

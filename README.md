@@ -2,6 +2,8 @@
 
 Public GitHub shipping calendar. Look up any user, click a day, share a permalink.
 
+**Live:** [git-cadence.grok.me](https://git-cadence.grok.me) · [ravidsrk](https://git-cadence.grok.me/u/ravidsrk) · [Docs](https://git-cadence.grok.me/docs)
+
 ![Cadence dashboard](docs/screenshot.png)
 
 Cadence reads the public contribution graph and public commit search. Click a square to see the commits authored that day, plus weekday rhythm, streak, and consistency.
@@ -15,7 +17,7 @@ Private work can still fill heatmap squares without appearing in the commit log.
 - [Data and privacy](./docs/data.md)
 - [FAQ](./docs/faq.md)
 
-The same docs are in the app at `/docs`.
+The same docs are at [git-cadence.grok.me/docs](https://git-cadence.grok.me/docs).
 
 ## Run locally
 
@@ -27,8 +29,6 @@ cd cadence
 npm install
 npm run dev
 ```
-
-Then open [http://localhost:8080](http://localhost:8080). Profiles: [http://localhost:8080/u/ravidsrk](http://localhost:8080/u/ravidsrk). Docs: [http://localhost:8080/docs](http://localhost:8080/docs).
 
 Optional: set `GITHUB_TOKEN` (or `GH_TOKEN`) to raise GitHub API rate limits. Copy `.env.example` if you want a local file — this project reads the variable from the environment.
 

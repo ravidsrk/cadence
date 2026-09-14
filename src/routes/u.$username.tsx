@@ -3,6 +3,7 @@ import { CadenceApp } from "@/components/dashboard/cadence-app";
 import { cadenceError, isGithubFnError } from "@/lib/github/types";
 import { loadCadence, todayIso } from "@/lib/github/load";
 import { validateCadenceSearch } from "@/lib/github/search";
+import { SITE_ORIGIN } from "@/lib/site";
 import { normalizeUsername } from "@/lib/github/username";
 
 export const Route = createFileRoute("/u/$username")({
@@ -44,11 +45,16 @@ export const Route = createFileRoute("/u/$username")({
       streak != null
         ? `${name}'s public GitHub cadence — ${streak}-day streak.`
         : `Public GitHub shipping cadence for ${name}.`;
+    const canonical = `${SITE_ORIGIN}/u/${encodeURIComponent(params.username)}`;
     return {
       meta: [
         { title: `${name} · Cadence` },
         { name: "description", content: description },
+        { property: "og:title", content: `${name} · Cadence` },
+        { property: "og:description", content: description },
+        { property: "og:url", content: canonical },
       ],
+      links: [{ rel: "canonical", href: canonical }],
     };
   },
   component: Profile,

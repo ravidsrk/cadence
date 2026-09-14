@@ -4,7 +4,7 @@ Cadence is a read-only dashboard of public GitHub activity. It is not GitHub, no
 
 ## Look up a profile
 
-Type a GitHub username, or paste a profile URL like `github.com/gaearon`. Load takes you to `/u/{username}` with today selected.
+Type a GitHub username, or paste a profile URL like `github.com/gaearon`. Load takes you to `https://git-cadence.grok.me/u/{username}` with today selected.
 
 On the home page, the last username you loaded is remembered in this browser only. Featured handles under the search field are known-good public calendars.
 
@@ -33,8 +33,8 @@ The year map is GitHub’s contribution calendar, clipped to today. **Last 12 mo
 
 Profile URLs are safe to send. They only encode a public username and optional date or year.
 
-- `/u/ravidsrk` — that user’s last 12 months, today selected
-- `/u/ravidsrk?d=2026-09-10` — same profile, that day selected
-- `/u/ravidsrk?y=2025` — calendar year 2025
+- [git-cadence.grok.me/u/ravidsrk](https://git-cadence.grok.me/u/ravidsrk) — that user’s last 12 months, today selected
+- [git-cadence.grok.me/u/ravidsrk?d=2026-09-10](https://git-cadence.grok.me/u/ravidsrk?d=2026-09-10) — same profile, that day selected
+- [git-cadence.grok.me/u/ravidsrk?y=2025](https://git-cadence.grok.me/u/ravidsrk?y=2025) — calendar year 2025
 
 **Copy link** writes the current profile, day, and year to the clipboard. **Share** opens an X compose window with streak, range total, and the permalink.

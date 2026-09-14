@@ -1,3 +1,5 @@
+import { SITE_ORIGIN } from "@/lib/site";
+
 export type DocBlock =
   | { type: "p"; text: string }
   | { type: "h3"; text: string }
@@ -28,7 +30,7 @@ export const DOC_SECTIONS: DocSection[] = [
         type: "ul",
         items: [
           "Home opens on a default public profile.",
-          "Every public GitHub user has a shareable page at /u/{username}.",
+          `Every public GitHub user has a shareable page at ${SITE_ORIGIN}/u/{username}.`,
           "Copy link or share to X from the header.",
         ],
       },
@@ -171,9 +173,9 @@ export const DOC_SECTIONS: DocSection[] = [
       {
         type: "ul",
         items: [
-          "/u/ravidsrk — that user’s last 12 months, today selected.",
-          "/u/ravidsrk?d=2026-09-10 — same profile, that day selected.",
-          "/u/ravidsrk?y=2025 — calendar year 2025.",
+          `${SITE_ORIGIN}/u/ravidsrk — that user’s last 12 months, today selected.`,
+          `${SITE_ORIGIN}/u/ravidsrk?d=2026-09-10 — same profile, that day selected.`,
+          `${SITE_ORIGIN}/u/ravidsrk?y=2025 — calendar year 2025.`,
           "Copy link writes the current profile, day, and year to the clipboard.",
           "Share opens an X compose window with streak, range total, and the permalink.",
         ],
