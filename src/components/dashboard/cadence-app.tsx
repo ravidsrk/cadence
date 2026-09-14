@@ -352,6 +352,9 @@ export function CadenceApp({
             <Share2 />
             Share
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/docs">Docs</Link>
+          </Button>
           <p className="text-xs text-muted-foreground">
             Try{" "}
             {FEATURED.map((login, i) => (
@@ -679,7 +682,11 @@ export function CadenceApp({
         search. Private work can still fill heatmap squares without appearing in
         the log. Profiles live at{" "}
         <span className="font-mono text-foreground/80">/u/username</span> and
-        are safe to share.
+        are safe to share.{" "}
+        <Link to="/docs" className="text-foreground/80 hover:underline">
+          How Cadence counts
+        </Link>
+        .
       </footer>
     </div>
   );

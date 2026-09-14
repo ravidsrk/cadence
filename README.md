@@ -6,16 +6,16 @@ Public GitHub shipping calendar. Look up any user, click a day, share a permalin
 
 Cadence reads the public contribution graph and public commit search. Click a square to see the commits authored that day, plus weekday rhythm, streak, and consistency.
 
-## Features
-
-- Look up any GitHub username (or paste a profile URL)
-- Year heatmap with day drill-down
-- Public commit log, hour-of-day strip, and repo mix for the selected day
-- Current / longest streak, best day, weekday rhythm, consistency
-- Shareable profiles at `/u/{username}` (optional `?d=YYYY-MM-DD` and `?y=YYYY`)
-- Copy link or share to X
-
 Private work can still fill heatmap squares without appearing in the commit log.
+
+## Product docs
+
+- [Using Cadence](./docs/guide.md)
+- [Metrics](./docs/metrics.md)
+- [Data and privacy](./docs/data.md)
+- [FAQ](./docs/faq.md)
+
+The same docs are in the app at `/docs`.
 
 ## Run locally
 
@@ -28,7 +28,7 @@ npm install
 npm run dev
 ```
 
-Then open [http://localhost:8080](http://localhost:8080). Profiles: [http://localhost:8080/u/ravidsrk](http://localhost:8080/u/ravidsrk).
+Then open [http://localhost:8080](http://localhost:8080). Profiles: [http://localhost:8080/u/ravidsrk](http://localhost:8080/u/ravidsrk). Docs: [http://localhost:8080/docs](http://localhost:8080/docs).
 
 Optional: set `GITHUB_TOKEN` (or `GH_TOKEN`) to raise GitHub API rate limits. Copy `.env.example` if you want a local file — this project reads the variable from the environment.
 
