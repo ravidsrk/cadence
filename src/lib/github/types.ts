@@ -68,6 +68,16 @@ export type CalendarLoaderData = {
   commits: DayCommitsPayload | GithubFnError;
 };
 
+export type LanguageMixItem = {
+  language: string;
+  repos: number;
+};
+
+export type ActivitySplit = {
+  pullRequests: number;
+  commits: number;
+};
+
 export function cadenceError(
   message: string,
   code: GithubFnError["code"] = "not_found",

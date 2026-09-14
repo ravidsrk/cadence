@@ -10,3 +10,8 @@ export function normalizeUsername(raw: string): string | null {
   if (!USERNAME_PATTERN.test(value)) return null;
   return value;
 }
+
+export function usernameFromSvgSplat(splat: string | undefined): string | null {
+  if (!splat) return null;
+  return normalizeUsername(splat.replace(/\.svg$/i, ""));
+}

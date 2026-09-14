@@ -8,6 +8,7 @@ Cadence only reads public GitHub data. It does not sign in as you, store profile
 - **Heatmap** — GitHub’s public contribution calendar HTML, with a public JSON mirror as fallback
 - **Commit log** — GitHub commit search for `author:{login} author-date:{day}`
 - Lookups are cached for a few minutes so repeat views of the same user and day stay snappy
+- Badge, heatmap SVG, share card, and JSON calendar are the same public graph at `/api/badge/{user}.svg`, `/api/heatmap/{user}.svg`, `/api/card/{user}.svg`, and `/api/calendar/{user}`
 
 ## What stays in this browser
 

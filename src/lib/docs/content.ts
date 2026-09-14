@@ -32,6 +32,8 @@ export const DOC_SECTIONS: DocSection[] = [
           "Home opens on a default public profile.",
           `Every public GitHub user has a shareable page at ${SITE_ORIGIN}/u/{username}.`,
           "Copy link or share to X from the header.",
+          "Export a share card, heatmap, CSV, README badge, or embed.",
+          "Compare two users, or open a year recap at /u/{username}/{year}.",
         ],
       },
     ],
@@ -158,6 +160,18 @@ export const DOC_SECTIONS: DocSection[] = [
             term: "Repo mix",
             def: "Public repositories that received those commits, capped at the busiest few.",
           },
+          {
+            term: "Longest pause",
+            def: "Longest run of empty contribution days inside the selected range.",
+          },
+          {
+            term: "Current pause",
+            def: "Consecutive empty days ending today. Zero if today has a contribution.",
+          },
+          {
+            term: "Quietest month",
+            def: "Month in range with the fewest active days, ignoring stubs shorter than two weeks.",
+          },
         ],
       },
     ],
@@ -176,8 +190,63 @@ export const DOC_SECTIONS: DocSection[] = [
           `${SITE_ORIGIN}/u/ravidsrk — that user’s last 12 months, today selected.`,
           `${SITE_ORIGIN}/u/ravidsrk?d=2026-09-10 — same profile, that day selected.`,
           `${SITE_ORIGIN}/u/ravidsrk?y=2025 — calendar year 2025.`,
+          `${SITE_ORIGIN}/u/ravidsrk/2025 — year recap for 2025.`,
+          `${SITE_ORIGIN}/compare/gaearon/yyx990803 — two calendars side by side.`,
           "Copy link writes the current profile, day, and year to the clipboard.",
           "Share opens an X compose window with streak, range total, and the permalink.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "export",
+    title: "Export, badge, embed, API",
+    blocks: [
+      {
+        type: "p",
+        text: "Export is under the Export menu on a loaded profile. All of these are the same public calendar Cadence already shows.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Share card downloads an SVG or PNG with name, streak, totals, and the heatmap.",
+          `README badge: ${SITE_ORIGIN}/api/badge/{username}.svg — streak, today, and range total.`,
+          `Heatmap SVG: ${SITE_ORIGIN}/api/heatmap/{username}.svg?year=2025`,
+          `JSON calendar: ${SITE_ORIGIN}/api/calendar/{username}`,
+          `Embed: iframe ${SITE_ORIGIN}/embed/{username} (optional ?y=2025).`,
+          "CSV and JSON downloads are the day rows for the selected range.",
+        ],
+      },
+      {
+        type: "callout",
+        text: "GitHub README image cache can lag a few minutes. The badge is public data with a short cache.",
+      },
+    ],
+  },
+  {
+    id: "recap",
+    title: "Year recap and compare",
+    blocks: [
+      {
+        type: "p",
+        text: "Recap is a calendar year: map, weekday rhythm, pauses, public repo languages, and GitHub search totals for commits vs pull requests. Languages are primary language on recently pushed public repos the user owns — not commit volume.",
+      },
+      {
+        type: "p",
+        text: "Compare loads two last-12-month calendars. It uses two heatmap fetches, so GitHub may rate-limit if you hammer it.",
+      },
+    ],
+  },
+  {
+    id: "keyboard",
+    title: "Keyboard",
+    blocks: [
+      {
+        type: "ul",
+        items: [
+          "← and → move the selected day along the calendar.",
+          "Home jumps to the first day in range. End jumps to the last.",
+          "Keys are ignored while typing in the username field.",
         ],
       },
     ],

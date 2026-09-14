@@ -19,6 +19,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { getCalendar, getDayCommits } from "@/lib/github/api";
+import { quietStats } from "@/lib/github/gaps";
 import {
   busiestWeekday,
   consistency,
@@ -28,6 +29,7 @@ import {
   shareText,
   weekdayTotals,
 } from "@/lib/github/insights";
+import { shiftDate } from "@/lib/github/layout";
 import { cadenceSearchFromState } from "@/lib/github/search";
 import {
   isGithubFnError,
@@ -48,8 +50,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CountPair } from "./count-pair";
+import { ExportMenu } from "./export-menu";
 import { Heatmap } from "./heatmap";
 import { HourStrip } from "./hour-strip";
+import { QuietPanel } from "./quiet-panel";
 import { WeekChart } from "./week-chart";
 import { WeekdayChart } from "./weekday-chart";
 
@@ -241,6 +246,39 @@ export function CadenceApp({
     syncUrl(selectedDate, next);
   }
 
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (!calendar) return;
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        pickDate(shiftDate(calendar.days, selectedDate, -1));
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        pickDate(shiftDate(calendar.days, selectedDate, 1));
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        const first = calendar.days[0];
+        if (first) pickDate(first.date);
+      } else if (event.key === "End") {
+        event.preventDefault();
+        const last = calendar.days[calendar.days.length - 1];
+        if (last) pickDate(last.date);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   async function copyLink() {
     const url = profilePermalink({
       origin: window.location.origin,
@@ -290,6 +328,7 @@ export function CadenceApp({
   const cadence = calendar ? consistency(calendar.days) : null;
   const hours = commits ? hourHistogram(commits.commits.map((c) => c.authoredAt)) : [];
   const repos = commits ? repoMix(commits.commits) : [];
+  const quiet = calendar ? quietStats(calendar.days, today) : null;
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -352,6 +391,21 @@ export function CadenceApp({
           <Button type="button" variant="outline" size="sm" onClick={shareOnX}>
             <Share2 />
             Share
+          </Button>
+          {calendar ? <ExportMenu calendar={calendar} year={year} /> : null}
+          <Button asChild variant="outline" size="sm">
+            <Link
+              to="/u/$username/$year"
+              params={{
+                username: shareLogin,
+                year: String(year ?? currentYear()),
+              }}
+            >
+              Recap
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/compare">Compare</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link to="/docs">Docs</Link>
@@ -450,40 +504,18 @@ export function CadenceApp({
             </Popover>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-end gap-8">
-            <div>
-              <p className="text-xs tracking-wide text-muted-foreground uppercase">
-                Public commits
-              </p>
-              {commitsQuery.isPending && !commits ? (
-                <Skeleton className="mt-2 h-14 w-28" />
-              ) : (
-                <p className="mt-1 font-mono text-5xl leading-none font-medium tracking-tight tabular-nums sm:text-6xl">
-                  {commits ? formatCount(commits.total) : "—"}
-                </p>
-              )}
-              {commitsError ? (
-                <p className="mt-2 max-w-xs text-xs text-muted-foreground">
-                  {commitsError.error}
-                </p>
-              ) : (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Authored on public default branches
-                </p>
-              )}
+          {commitsQuery.isPending && !commits ? (
+            <div className="mt-6">
+              <Skeleton className="h-14 w-28" />
             </div>
-            <div>
-              <p className="text-xs tracking-wide text-muted-foreground uppercase">
-                GitHub contributions
-              </p>
-              <p className="mt-1 font-mono text-3xl font-medium tabular-nums">
-                {selectedDay ? formatCount(selectedDay.count) : "—"}
-              </p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Commits, PRs, reviews, issues
-              </p>
-            </div>
-          </div>
+          ) : (
+            <CountPair
+              commitsLabel={commits ? formatCount(commits.total) : "—"}
+              commitsHint="Authored on public default branches"
+              commitsError={commitsError?.error}
+              contribLabel={selectedDay ? formatCount(selectedDay.count) : "—"}
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -617,6 +649,7 @@ export function CadenceApp({
                   </dd>
                 </div>
               </dl>
+              {quiet ? <QuietPanel quiet={quiet} /> : null}
             </>
           ) : (
             <Skeleton className="mt-4 h-32 w-full" />

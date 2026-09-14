@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { addDays, format, parseISO, startOfWeek } from "date-fns";
+import { format, parseISO } from "date-fns";
+import { heatmapGrid } from "@/lib/github/layout";
 import { cn } from "@/lib/utils";
 import type { DayCount } from "@/lib/github/types";
 
@@ -10,8 +11,8 @@ const STEP = CELL + GAP;
 
 type HeatmapProps = {
   days: DayCount[];
-  selectedDate: string;
-  onSelect: (date: string) => void;
+  selectedDate?: string;
+  onSelect?: (date: string) => void;
 };
 
 function levelClass(level: number) {
@@ -24,45 +25,12 @@ function levelClass(level: number) {
 
 export function Heatmap({ days, selectedDate, onSelect }: HeatmapProps) {
   const [tip, setTip] = useState<string | null>(null);
-
-  const { weeks, monthLabels } = useMemo(() => {
-    if (days.length === 0) {
-      return {
-        weeks: [] as Array<Array<DayCount | null>>,
-        monthLabels: [] as Array<{ index: number; label: string }>,
-      };
-    }
-    const byDate = new Map(days.map((d) => [d.date, d]));
-    const first = parseISO(days[0].date);
-    const last = parseISO(days[days.length - 1].date);
-    let cursor = startOfWeek(first, { weekStartsOn: 0 });
-    const weeks: Array<Array<DayCount | null>> = [];
-    const monthLabels: Array<{ index: number; label: string }> = [];
-    let lastMonth = "";
-
-    while (cursor <= last) {
-      const week: Array<DayCount | null> = [];
-      for (let i = 0; i < 7; i += 1) {
-        const key = format(cursor, "yyyy-MM-dd");
-        week.push(byDate.get(key) ?? null);
-        cursor = addDays(cursor, 1);
-      }
-      const labelDay = week.find((d) => d)?.date;
-      if (labelDay) {
-        const month = format(parseISO(labelDay), "MMM");
-        if (month !== lastMonth) {
-          monthLabels.push({ index: weeks.length, label: month });
-          lastMonth = month;
-        }
-      }
-      weeks.push(week);
-    }
-    return { weeks, monthLabels };
-  }, [days]);
+  const { weeks, monthLabels } = useMemo(() => heatmapGrid(days), [days]);
+  const interactive = Boolean(onSelect);
 
   return (
     <div className="relative">
-      <div className="-mx-1 overflow-x-auto pb-2">
+      <div className="max-w-full overflow-x-auto pb-2">
         <div className="inline-flex min-w-full gap-3 px-1">
           <div className="flex flex-col justify-end gap-[3px] pt-5">
             {WEEKDAYS.map((label, i) => (
@@ -80,7 +48,7 @@ export function Heatmap({ days, selectedDate, onSelect }: HeatmapProps) {
           <div className="flex flex-col">
             <div
               className="relative mb-1 h-4"
-              style={{ width: weeks.length * STEP - GAP }}
+              style={{ width: Math.max(0, weeks.length * STEP - GAP) }}
             >
               {monthLabels.map((item) => (
                 <span
@@ -97,11 +65,26 @@ export function Heatmap({ days, selectedDate, onSelect }: HeatmapProps) {
                 <div key={wi} className="flex flex-col gap-[3px]">
                   {week.map((day, di) => {
                     if (!day) {
-                      return (
-                        <span key={di} className="size-3 rounded-[2px]" />
-                      );
+                      return <span key={di} className="size-3 rounded-[2px]" />;
                     }
                     const selected = day.date === selectedDate;
+                    const className = cn(
+                      "size-3 rounded-[2px] outline-none",
+                      levelClass(day.level),
+                      selected &&
+                        "ring-2 ring-foreground ring-offset-1 ring-offset-card",
+                      interactive &&
+                        "transition-[box-shadow,transform] duration-150 ease-out hover:scale-125 focus-visible:ring-2 focus-visible:ring-ring",
+                    );
+                    if (!interactive) {
+                      return (
+                        <span
+                          key={day.date}
+                          title={`${day.count} on ${day.date}`}
+                          className={className}
+                        />
+                      );
+                    }
                     return (
                       <button
                         key={day.date}
@@ -120,14 +103,8 @@ export function Heatmap({ days, selectedDate, onSelect }: HeatmapProps) {
                           )
                         }
                         onBlur={() => setTip(null)}
-                        onClick={() => onSelect(day.date)}
-                        className={cn(
-                          "size-3 rounded-[2px] outline-none transition-[box-shadow,transform] duration-150 ease-out",
-                          levelClass(day.level),
-                          selected &&
-                            "ring-2 ring-foreground ring-offset-1 ring-offset-card",
-                          "hover:scale-125 focus-visible:ring-2 focus-visible:ring-ring",
-                        )}
+                        onClick={() => onSelect?.(day.date)}
+                        className={className}
                       />
                     );
                   })}
@@ -137,18 +114,22 @@ export function Heatmap({ days, selectedDate, onSelect }: HeatmapProps) {
           </div>
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
-        <span className="min-h-4 tabular-nums">{tip ?? "Select a day"}</span>
-        <div className="flex items-center gap-1">
-          <span>Less</span>
-          <span className="size-3 rounded-[2px] bg-heat-0" />
-          <span className="size-3 rounded-[2px] bg-heat-1" />
-          <span className="size-3 rounded-[2px] bg-heat-2" />
-          <span className="size-3 rounded-[2px] bg-heat-3" />
-          <span className="size-3 rounded-[2px] bg-heat-4" />
-          <span>More</span>
+      {interactive ? (
+        <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+          <span className="min-h-4 tabular-nums">
+            {tip ?? "Select a day · ← → to move"}
+          </span>
+          <div className="flex items-center gap-1">
+            <span>Less</span>
+            <span className="size-3 rounded-[2px] bg-heat-0" />
+            <span className="size-3 rounded-[2px] bg-heat-1" />
+            <span className="size-3 rounded-[2px] bg-heat-2" />
+            <span className="size-3 rounded-[2px] bg-heat-3" />
+            <span className="size-3 rounded-[2px] bg-heat-4" />
+            <span>More</span>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

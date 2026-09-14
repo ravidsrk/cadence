@@ -12,7 +12,6 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: SITE_NAME },
       { name: "description", content: SITE_DESCRIPTION },
-      { property: "og:url", content: SITE_ORIGIN },
     ],
     links: [{ rel: "canonical", href: SITE_ORIGIN }],
   }),

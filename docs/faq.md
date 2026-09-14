@@ -23,3 +23,17 @@ No. Cadence is an independent dashboard that reads public GitHub pages and APIs.
 ### Why does Cadence say it is rate-limited?
 
 GitHub caps unauthenticated API traffic. Wait a minute and try again. The heatmap can still load when commit search is limited.
+
+### Can I put Cadence on my GitHub README?
+
+Yes. Export copies a badge:
+
+```md
+[![Cadence](https://git-cadence.grok.me/api/badge/USERNAME.svg)](https://git-cadence.grok.me/u/USERNAME)
+```
+
+Heatmap SVG and a JSON calendar live under `/api/heatmap/USERNAME.svg` and `/api/calendar/USERNAME`. Embed with `/embed/USERNAME`.
+
+### What is a year recap?
+
+`/u/USERNAME/2025` is that calendar year: map, weekday rhythm, pauses, public repo languages, and public search totals for commits vs pull requests. Languages are the primary language on recently pushed public repos, not commit volume.

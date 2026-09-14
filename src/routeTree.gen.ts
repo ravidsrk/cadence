@@ -10,12 +10,27 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as CompareIndexRouteImport } from './routes/compare.index'
+import { Route as EmbedUsernameRouteImport } from './routes/embed.$username'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as ApiBadgeSplatRouteImport } from './routes/api/badge.$'
+import { Route as ApiCalendarUsernameRouteImport } from './routes/api/calendar.$username'
+import { Route as ApiCardSplatRouteImport } from './routes/api/card.$'
+import { Route as ApiHeatmapSplatRouteImport } from './routes/api/heatmap.$'
+import { Route as CompareABRouteImport } from './routes/compare.$a.$b'
+import { Route as UUsernameIndexRouteImport } from './routes/u.$username.index'
+import { Route as UUsernameYearRouteImport } from './routes/u.$username.$year'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -23,40 +38,157 @@ const DocsRoute = DocsRouteImport.update({
   path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareIndexRoute = CompareIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CompareRoute,
+} as any)
+const EmbedUsernameRoute = EmbedUsernameRouteImport.update({
+  id: '/embed/$username',
+  path: '/embed/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UUsernameRoute = UUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBadgeSplatRoute = ApiBadgeSplatRouteImport.update({
+  id: '/api/badge/$',
+  path: '/api/badge/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCalendarUsernameRoute = ApiCalendarUsernameRouteImport.update({
+  id: '/api/calendar/$username',
+  path: '/api/calendar/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCardSplatRoute = ApiCardSplatRouteImport.update({
+  id: '/api/card/$',
+  path: '/api/card/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHeatmapSplatRoute = ApiHeatmapSplatRouteImport.update({
+  id: '/api/heatmap/$',
+  path: '/api/heatmap/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareABRoute = CompareABRouteImport.update({
+  id: '/$a/$b',
+  path: '/$a/$b',
+  getParentRoute: () => CompareRoute,
+} as any)
+const UUsernameIndexRoute = UUsernameIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => UUsernameRoute,
+} as any)
+const UUsernameYearRoute = UUsernameYearRouteImport.update({
+  id: '/$year',
+  path: '/$year',
+  getParentRoute: () => UUsernameRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRouteWithChildren
   '/docs': typeof DocsRoute
-  '/u/$username': typeof UUsernameRoute
+  '/embed/$username': typeof EmbedUsernameRoute
+  '/u/$username': typeof UUsernameRouteWithChildren
+  '/compare/': typeof CompareIndexRoute
+  '/api/badge/$': typeof ApiBadgeSplatRoute
+  '/api/calendar/$username': typeof ApiCalendarUsernameRoute
+  '/api/card/$': typeof ApiCardSplatRoute
+  '/api/heatmap/$': typeof ApiHeatmapSplatRoute
+  '/compare/$a/$b': typeof CompareABRoute
+  '/u/$username/$year': typeof UUsernameYearRoute
+  '/u/$username/': typeof UUsernameIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/docs': typeof DocsRoute
-  '/u/$username': typeof UUsernameRoute
+  '/embed/$username': typeof EmbedUsernameRoute
+  '/compare': typeof CompareIndexRoute
+  '/api/badge/$': typeof ApiBadgeSplatRoute
+  '/api/calendar/$username': typeof ApiCalendarUsernameRoute
+  '/api/card/$': typeof ApiCardSplatRoute
+  '/api/heatmap/$': typeof ApiHeatmapSplatRoute
+  '/compare/$a/$b': typeof CompareABRoute
+  '/u/$username/$year': typeof UUsernameYearRoute
+  '/u/$username': typeof UUsernameIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compare': typeof CompareRouteWithChildren
   '/docs': typeof DocsRoute
-  '/u/$username': typeof UUsernameRoute
+  '/embed/$username': typeof EmbedUsernameRoute
+  '/u/$username': typeof UUsernameRouteWithChildren
+  '/compare/': typeof CompareIndexRoute
+  '/api/badge/$': typeof ApiBadgeSplatRoute
+  '/api/calendar/$username': typeof ApiCalendarUsernameRoute
+  '/api/card/$': typeof ApiCardSplatRoute
+  '/api/heatmap/$': typeof ApiHeatmapSplatRoute
+  '/compare/$a/$b': typeof CompareABRoute
+  '/u/$username/$year': typeof UUsernameYearRoute
+  '/u/$username/': typeof UUsernameIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/docs' | '/u/$username'
+  fullPaths:
+    | '/'
+    | '/compare'
+    | '/docs'
+    | '/embed/$username'
+    | '/u/$username'
+    | '/compare/'
+    | '/api/badge/$'
+    | '/api/calendar/$username'
+    | '/api/card/$'
+    | '/api/heatmap/$'
+    | '/compare/$a/$b'
+    | '/u/$username/$year'
+    | '/u/$username/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/docs' | '/u/$username'
-  id: '__root__' | '/' | '/docs' | '/u/$username'
+  to:
+    | '/'
+    | '/docs'
+    | '/embed/$username'
+    | '/compare'
+    | '/api/badge/$'
+    | '/api/calendar/$username'
+    | '/api/card/$'
+    | '/api/heatmap/$'
+    | '/compare/$a/$b'
+    | '/u/$username/$year'
+    | '/u/$username'
+  id:
+    | '__root__'
+    | '/'
+    | '/compare'
+    | '/docs'
+    | '/embed/$username'
+    | '/u/$username'
+    | '/compare/'
+    | '/api/badge/$'
+    | '/api/calendar/$username'
+    | '/api/card/$'
+    | '/api/heatmap/$'
+    | '/compare/$a/$b'
+    | '/u/$username/$year'
+    | '/u/$username/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompareRoute: typeof CompareRouteWithChildren
   DocsRoute: typeof DocsRoute
-  UUsernameRoute: typeof UUsernameRoute
+  EmbedUsernameRoute: typeof EmbedUsernameRoute
+  UUsernameRoute: typeof UUsernameRouteWithChildren
+  ApiBadgeSplatRoute: typeof ApiBadgeSplatRoute
+  ApiCalendarUsernameRoute: typeof ApiCalendarUsernameRoute
+  ApiCardSplatRoute: typeof ApiCardSplatRoute
+  ApiHeatmapSplatRoute: typeof ApiHeatmapSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,11 +200,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs': {
       id: '/docs'
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare/': {
+      id: '/compare/'
+      path: '/'
+      fullPath: '/compare/'
+      preLoaderRoute: typeof CompareIndexRouteImport
+      parentRoute: typeof CompareRoute
+    }
+    '/embed/$username': {
+      id: '/embed/$username'
+      path: '/embed/$username'
+      fullPath: '/embed/$username'
+      preLoaderRoute: typeof EmbedUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/u/$username': {
@@ -82,13 +235,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/badge/$': {
+      id: '/api/badge/$'
+      path: '/api/badge/$'
+      fullPath: '/api/badge/$'
+      preLoaderRoute: typeof ApiBadgeSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/calendar/$username': {
+      id: '/api/calendar/$username'
+      path: '/api/calendar/$username'
+      fullPath: '/api/calendar/$username'
+      preLoaderRoute: typeof ApiCalendarUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/card/$': {
+      id: '/api/card/$'
+      path: '/api/card/$'
+      fullPath: '/api/card/$'
+      preLoaderRoute: typeof ApiCardSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/heatmap/$': {
+      id: '/api/heatmap/$'
+      path: '/api/heatmap/$'
+      fullPath: '/api/heatmap/$'
+      preLoaderRoute: typeof ApiHeatmapSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare/$a/$b': {
+      id: '/compare/$a/$b'
+      path: '/$a/$b'
+      fullPath: '/compare/$a/$b'
+      preLoaderRoute: typeof CompareABRouteImport
+      parentRoute: typeof CompareRoute
+    }
+    '/u/$username/': {
+      id: '/u/$username/'
+      path: '/'
+      fullPath: '/u/$username/'
+      preLoaderRoute: typeof UUsernameIndexRouteImport
+      parentRoute: typeof UUsernameRoute
+    }
+    '/u/$username/$year': {
+      id: '/u/$username/$year'
+      path: '/$year'
+      fullPath: '/u/$username/$year'
+      preLoaderRoute: typeof UUsernameYearRouteImport
+      parentRoute: typeof UUsernameRoute
+    }
   }
 }
 
+interface CompareRouteChildren {
+  CompareIndexRoute: typeof CompareIndexRoute
+  CompareABRoute: typeof CompareABRoute
+}
+
+const CompareRouteChildren: CompareRouteChildren = {
+  CompareIndexRoute: CompareIndexRoute,
+  CompareABRoute: CompareABRoute,
+}
+
+const CompareRouteWithChildren =
+  CompareRoute._addFileChildren(CompareRouteChildren)
+
+interface UUsernameRouteChildren {
+  UUsernameYearRoute: typeof UUsernameYearRoute
+  UUsernameIndexRoute: typeof UUsernameIndexRoute
+}
+
+const UUsernameRouteChildren: UUsernameRouteChildren = {
+  UUsernameYearRoute: UUsernameYearRoute,
+  UUsernameIndexRoute: UUsernameIndexRoute,
+}
+
+const UUsernameRouteWithChildren = UUsernameRoute._addFileChildren(
+  UUsernameRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompareRoute: CompareRouteWithChildren,
   DocsRoute: DocsRoute,
-  UUsernameRoute: UUsernameRoute,
+  EmbedUsernameRoute: EmbedUsernameRoute,
+  UUsernameRoute: UUsernameRouteWithChildren,
+  ApiBadgeSplatRoute: ApiBadgeSplatRoute,
+  ApiCalendarUsernameRoute: ApiCalendarUsernameRoute,
+  ApiCardSplatRoute: ApiCardSplatRoute,
+  ApiHeatmapSplatRoute: ApiHeatmapSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,7 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { USERNAME_PATTERN } from "./username";
-import type { CalendarPayload, DayCommitsPayload, GithubFnError } from "./types";
+import type {
+  ActivitySplit,
+  CalendarPayload,
+  DayCommitsPayload,
+  GithubFnError,
+  LanguageMixItem,
+} from "./types";
 
 const usernameSchema = z
   .string()
@@ -37,4 +43,32 @@ export const getDayCommits = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<DayCommitsPayload | GithubFnError> => {
     const { fetchDayCommits } = await import("./fetch.server");
     return fetchDayCommits(data);
+  });
+
+export const getLanguageMix = createServerFn({ method: "POST" })
+  .validator((data: unknown) =>
+    z.object({ username: usernameSchema }).parse(data),
+  )
+  .handler(
+    async ({
+      data,
+    }): Promise<{ items: LanguageMixItem[] } | GithubFnError> => {
+      const { fetchLanguageMix } = await import("./fetch.server");
+      return fetchLanguageMix(data.username);
+    },
+  );
+
+export const getActivitySplit = createServerFn({ method: "POST" })
+  .validator((data: unknown) =>
+    z
+      .object({
+        username: usernameSchema,
+        from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data }): Promise<ActivitySplit | GithubFnError> => {
+    const { fetchActivitySplit } = await import("./fetch.server");
+    return fetchActivitySplit(data);
   });

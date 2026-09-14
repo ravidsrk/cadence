@@ -22,8 +22,6 @@ export const Route = createRootRoute({
         name: "description",
         content: SITE_DESCRIPTION,
       },
-      { property: "og:title", content: SITE_NAME },
-      { property: "og:description", content: SITE_DESCRIPTION },
       { name: "theme-color", content: "#0c0c0d" },
     ],
     links: [

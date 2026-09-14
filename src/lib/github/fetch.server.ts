@@ -1,11 +1,13 @@
 import { assignLevels, computeStats } from "./stats";
 import { parseContributionHtml, parseJogruber } from "./parse";
 import type {
+  ActivitySplit,
   CalendarPayload,
   DayCommit,
   DayCommitsPayload,
   GithubFnError,
   GithubProfile,
+  LanguageMixItem,
 } from "./types";
 
 const UA = "CadenceDashboard/1.0";
@@ -266,3 +268,83 @@ export async function fetchDayCommits(input: {
     return error("unavailable", "Could not load public commits for that day.");
   }
 }
+
+type GithubRepo = {
+  fork?: boolean;
+  language?: string | null;
+};
+
+export async function fetchLanguageMix(
+  username: string,
+): Promise<{ items: LanguageMixItem[] } | GithubFnError> {
+  try {
+    return await cached(`lang:${username}`, async () => {
+      const res = await githubJson<GithubRepo[]>(
+        `https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=30&sort=pushed&type=owner`,
+      );
+      if (res.status === 404) {
+        return error("not_found", `No GitHub user named ${username}`);
+      }
+      if (res.status === 403 || res.status === 429) {
+        return error(
+          "rate_limit",
+          "GitHub is rate-limiting language lookups.",
+        );
+      }
+      if (res.status >= 400 || !Array.isArray(res.body)) {
+        return error("unavailable", "Could not load public repositories.");
+      }
+      const counts = new Map<string, number>();
+      for (const repo of res.body) {
+        if (repo.fork) continue;
+        const language = repo.language?.trim();
+        if (!language) continue;
+        counts.set(language, (counts.get(language) ?? 0) + 1);
+      }
+      const items = [...counts.entries()]
+        .map(([language, repos]) => ({ language, repos }))
+        .sort((a, b) => b.repos - a.repos || a.language.localeCompare(b.language));
+      return { items };
+    });
+  } catch {
+    return error("unavailable", "Could not load public repositories.");
+  }
+}
+
+export async function fetchActivitySplit(input: {
+  username: string;
+  from: string;
+  to: string;
+}): Promise<ActivitySplit | GithubFnError> {
+  const { username, from, to } = input;
+  try {
+    return await cached(`split:${username}:${from}:${to}`, async () => {
+      const commitQ = `author:${username} author-date:${from}..${to}`;
+      const prQ = `author:${username} type:pr created:${from}..${to}`;
+      const [commits, prs] = await Promise.all([
+        githubJson<SearchResponse>(
+          `https://api.github.com/search/commits?q=${encodeURIComponent(commitQ)}&per_page=1`,
+        ),
+        githubJson<SearchResponse>(
+          `https://api.github.com/search/issues?q=${encodeURIComponent(prQ)}&per_page=1`,
+        ),
+      ]);
+      if (commits.status === 403 || commits.status === 429 || prs.status === 403 || prs.status === 429) {
+        return error(
+          "rate_limit",
+          "GitHub search is rate-limited. Recap still shows the calendar.",
+        );
+      }
+      if (commits.status >= 400 && prs.status >= 400) {
+        return error("unavailable", "Could not load public PR and commit totals.");
+      }
+      return {
+        commits: commits.body?.total_count ?? 0,
+        pullRequests: prs.body?.total_count ?? 0,
+      };
+    });
+  } catch {
+    return error("unavailable", "Could not load public PR and commit totals.");
+  }
+}
+

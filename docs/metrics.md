@@ -16,5 +16,8 @@ All contribution metrics use GitHub’s public contribution graph for the select
 | **Last 14 days** | Contribution volume for the two weeks ending on the selected day. |
 | **Hour strip** | When public commits that day were authored, in your browser’s local time. |
 | **Repo mix** | Public repositories that received those commits, capped at the busiest few. |
+| **Longest pause** | Longest run of empty contribution days in range. |
+| **Current pause** | Consecutive empty days ending today. |
+| **Quietest month** | Month in range with the fewest active days. |
 
 Cadence is not a productivity score. Consistency is “how often the graph was non-empty,” not “how good the work was.”
