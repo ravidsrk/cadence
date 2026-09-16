@@ -45,6 +45,20 @@ export const getDayCommits = createServerFn({ method: "POST" })
     return fetchDayCommits(data);
   });
 
+export const getBoard = createServerFn({ method: "GET" }).handler(async () => {
+  const { loadBoard } = await import("./board.server");
+  return loadBoard();
+});
+
+export const addBoard = createServerFn({ method: "POST" })
+  .validator((data: unknown) =>
+    z.object({ username: z.string().trim().min(1).max(80) }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const { addBoardProfile } = await import("./board.server");
+    return addBoardProfile(data.username);
+  });
+
 export const getLanguageMix = createServerFn({ method: "POST" })
   .validator((data: unknown) =>
     z.object({ username: usernameSchema }).parse(data),

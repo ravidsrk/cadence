@@ -17,7 +17,7 @@ import {
   Search,
   Trophy,
 } from "lucide-react";
-import { getCalendar, getDayCommits } from "@/lib/github/api";
+import { addBoard, getCalendar, getDayCommits } from "@/lib/github/api";
 import { quietStats } from "@/lib/github/gaps";
 import {
   busiestWeekday,
@@ -391,6 +391,12 @@ export function CadenceApp({
             <ExportMenu calendar={calendar} year={year} onShareX={shareOnX} />
           ) : null}
           <Link
+            to="/board"
+            className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Board
+          </Link>
+          <Link
             to="/docs"
             className="text-sm text-muted-foreground hover:text-foreground hover:underline"
           >
@@ -456,6 +462,17 @@ export function CadenceApp({
             >
               Compare
             </Link>
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground hover:underline"
+              onClick={() => {
+                void addBoard({ data: { username: shareLogin } }).finally(() => {
+                  void navigate({ to: "/board" });
+                });
+              }}
+            >
+              Add to board
+            </button>
           </nav>
         </div>
       ) : calendarPending ? (
@@ -729,6 +746,10 @@ export function CadenceApp({
           git-cadence.grok.me/u/username
         </a>{" "}
         and are safe to share.{" "}
+        <Link to="/board" className="text-foreground/80 hover:underline">
+          Shipping board
+        </Link>
+        .{" "}
         <Link to="/docs" className="text-foreground/80 hover:underline">
           How Cadence counts
         </Link>

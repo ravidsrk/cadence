@@ -34,6 +34,7 @@ export const DOC_SECTIONS: DocSection[] = [
           "Copy link from the header. Share opens X plus card, badge, and export.",
           "Recap and Compare sit next to the profile, not in the header.",
           "Compare two users with a year toggle, or open a year recap at /u/{username}/{year}.",
+          "The shipping board is an opt-in list of public handles, ranked by streak and consistency — not a score.",
         ],
       },
     ],
@@ -235,6 +236,29 @@ export const DOC_SECTIONS: DocSection[] = [
       {
         type: "p",
         text: "Compare loads two calendars. Switch Last 12 months or a calendar year; the strip on top names who leads on volume, streak, and consistency. Two heatmap fetches, so GitHub may rate-limit if you hammer it.",
+      },
+    ],
+  },
+  {
+    id: "board",
+    title: "Shipping board",
+    blocks: [
+      {
+        type: "p",
+        text: "The board is an opt-in list of public GitHub profiles. Cadence ranks them by last-12-month streak, consistency, active days, or volume. It is not a productivity score and not every GitHub user — only handles someone added, capped at 24 so GitHub is not crawled.",
+      },
+      {
+        type: "ul",
+        items: [
+          `${SITE_ORIGIN}/board — default sort is current streak.`,
+          `${SITE_ORIGIN}/board?s=consistency — share of days with at least one contribution.`,
+          "Add a username on the board, or Add to board from a loaded profile.",
+          "Anyone can add a public handle. There are no Cadence accounts.",
+        ],
+      },
+      {
+        type: "callout",
+        text: "Volume still includes private work GitHub counts on the contribution graph. Streak and consistency use that same graph.",
       },
     ],
   },

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BoardRouteImport } from './routes/board'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CompareIndexRouteImport } from './routes/compare.index'
@@ -26,6 +27,11 @@ import { Route as UUsernameYearRouteImport } from './routes/u.$username.$year'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoardRoute = BoardRouteImport.update({
+  id: '/board',
+  path: '/board',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -91,6 +97,7 @@ const UUsernameYearRoute = UUsernameYearRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/board': typeof BoardRoute
   '/compare': typeof CompareRouteWithChildren
   '/docs': typeof DocsRoute
   '/embed/$username': typeof EmbedUsernameRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/board': typeof BoardRoute
   '/docs': typeof DocsRoute
   '/embed/$username': typeof EmbedUsernameRoute
   '/compare': typeof CompareIndexRoute
@@ -120,6 +128,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/board': typeof BoardRoute
   '/compare': typeof CompareRouteWithChildren
   '/docs': typeof DocsRoute
   '/embed/$username': typeof EmbedUsernameRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/board'
     | '/compare'
     | '/docs'
     | '/embed/$username'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/board'
     | '/docs'
     | '/embed/$username'
     | '/compare'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/board'
     | '/compare'
     | '/docs'
     | '/embed/$username'
@@ -181,6 +193,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BoardRoute: typeof BoardRoute
   CompareRoute: typeof CompareRouteWithChildren
   DocsRoute: typeof DocsRoute
   EmbedUsernameRoute: typeof EmbedUsernameRoute
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/board': {
+      id: '/board'
+      path: '/board'
+      fullPath: '/board'
+      preLoaderRoute: typeof BoardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -316,6 +336,7 @@ const UUsernameRouteWithChildren = UUsernameRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BoardRoute: BoardRoute,
   CompareRoute: CompareRouteWithChildren,
   DocsRoute: DocsRoute,
   EmbedUsernameRoute: EmbedUsernameRoute,

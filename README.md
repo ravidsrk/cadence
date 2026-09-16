@@ -2,7 +2,7 @@
 
 Public GitHub shipping calendar. Look up any user, click a day, share a permalink.
 
-**Live:** [git-cadence.grok.me](https://git-cadence.grok.me) · [ravidsrk](https://git-cadence.grok.me/u/ravidsrk) · [2026 recap](https://git-cadence.grok.me/u/ravidsrk/2026) · [Docs](https://git-cadence.grok.me/docs)
+**Live:** [git-cadence.grok.me](https://git-cadence.grok.me) · [ravidsrk](https://git-cadence.grok.me/u/ravidsrk) · [2026 recap](https://git-cadence.grok.me/u/ravidsrk/2026) · [Board](https://git-cadence.grok.me/board) · [Docs](https://git-cadence.grok.me/docs)
 
 README badge:
 

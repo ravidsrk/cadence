@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { compareDelta } from "./compare.ts";
+import { rankBoard } from "./board.ts";
 import { calendarCsv } from "./csv.ts";
 import { quietStats } from "./gaps.ts";
 import { compactCount, escapeXml, shiftDate } from "./layout.ts";
@@ -88,3 +89,79 @@ describe("compareDelta", () => {
     assert.equal(rows[2]?.note, "tied");
   });
 });
+
+describe("rankBoard", () => {
+  it("orders by streak and sends errors last", () => {
+    const ranked = rankBoard(
+      [
+        {
+          username: "slow",
+          calendar: {
+            username: "slow",
+            profile: {
+              login: "slow",
+              name: null,
+              avatarUrl: "",
+              htmlUrl: "",
+              bio: null,
+            },
+            range: { from: "2026-01-01", to: "2026-01-03" },
+            days: [
+              { date: "2026-01-01", count: 1, level: 1 },
+              { date: "2026-01-02", count: 0, level: 0 },
+              { date: "2026-01-03", count: 1, level: 1 },
+            ],
+            stats: {
+              total: 2,
+              today: 1,
+              week: 2,
+              currentStreak: 1,
+              longestStreak: 1,
+              bestDay: { date: "2026-01-01", count: 1 },
+              activeDays: 2,
+            },
+          },
+        },
+        {
+          username: "fast",
+          calendar: {
+            username: "fast",
+            profile: {
+              login: "fast",
+              name: null,
+              avatarUrl: "",
+              htmlUrl: "",
+              bio: null,
+            },
+            range: { from: "2026-01-01", to: "2026-01-03" },
+            days: [
+              { date: "2026-01-01", count: 4, level: 2 },
+              { date: "2026-01-02", count: 4, level: 2 },
+              { date: "2026-01-03", count: 4, level: 2 },
+            ],
+            stats: {
+              total: 12,
+              today: 4,
+              week: 12,
+              currentStreak: 3,
+              longestStreak: 3,
+              bestDay: { date: "2026-01-03", count: 4 },
+              activeDays: 3,
+            },
+          },
+        },
+        {
+          username: "gone",
+          calendar: { error: "Not found", code: "not_found" },
+        },
+      ],
+      "streak",
+    );
+    assert.equal(ranked[0]?.username, "fast");
+    assert.equal(ranked[0]?.rank, 1);
+    assert.equal(ranked[1]?.username, "slow");
+    assert.equal(ranked[2]?.username, "gone");
+    assert.ok(ranked[2]?.error);
+  });
+});
+

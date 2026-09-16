@@ -41,3 +41,7 @@ Heatmap SVG and a JSON calendar live under `/api/heatmap/USERNAME.svg` and `/api
 ### How does Compare work?
 
 `/compare/USER_A/USER_B` loads two public calendars. Add `?y=2025` for a calendar year. The strip on top names who leads on volume, streak, and consistency. From a profile, Compare prefills that username.
+
+### Is the shipping board a ranking of all of GitHub?
+
+No. It is an opt-in list, capped at 24 public profiles, ranked by last-12-month streak or consistency. Cadence is not a score. Anyone can add a public handle; there are no Cadence accounts.

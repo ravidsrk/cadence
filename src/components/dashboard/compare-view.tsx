@@ -154,6 +154,12 @@ export function CompareView({
             Dashboard
           </Link>
           <Link
+            to="/board"
+            className="text-muted-foreground hover:text-foreground hover:underline"
+          >
+            Board
+          </Link>
+          <Link
             to="/docs"
             className="text-muted-foreground hover:text-foreground hover:underline"
           >
