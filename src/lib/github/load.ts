@@ -1,4 +1,4 @@
-import { getActivitySplit, getCalendar, getDayCommits, getLanguageMix } from "./api";
+import { getActivitySplit, getBoard, getCalendar, getDayCommits, getLanguageMix } from "./api";
 import type {
   ActivitySplit,
   CalendarLoaderData,
@@ -44,6 +44,10 @@ export async function loadCalendarOnly(input: {
   return getCalendar({
     data: { username: input.username, year: input.year, today: input.today },
   });
+}
+
+export async function loadBoardPage() {
+  return getBoard();
 }
 
 export type RecapLoaderData = {

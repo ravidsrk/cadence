@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BoardView } from "@/components/dashboard/board-view";
 import { parseBoardSort } from "@/lib/github/board";
+import { loadBoardPage } from "@/lib/github/load";
 import { SITE_ORIGIN } from "@/lib/site";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -16,10 +17,7 @@ export const Route = createFileRoute("/board")({
     if (s !== "peak") return { s };
     return {};
   },
-  loader: async () => {
-    const { loadBoard } = await import("@/lib/github/board.server");
-    return loadBoard();
-  },
+  loader: async () => loadBoardPage(),
   head: () => ({
     meta: [
       { title: "Biggest day · Cadence" },
