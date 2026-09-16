@@ -44,4 +44,4 @@ Heatmap SVG and a JSON calendar live under `/api/heatmap/USERNAME.svg` and `/api
 
 ### Is the shipping board a ranking of all of GitHub?
 
-No. It is an opt-in list, capped at 24 public profiles, ranked by last-12-month streak or consistency. Cadence is not a score. Anyone can add a public handle; there are no Cadence accounts.
+No. It is an opt-in list, capped at 24 public profiles. The default ranking is **peak day** — the highest GitHub contribution count on any one day in the last 12 months. Add `?d=YYYY-MM-DD` to rank that calendar day only. Anyone can add a public handle; there are no Cadence accounts.

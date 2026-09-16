@@ -39,7 +39,8 @@ Profile URLs are safe to send. They only encode a public username and optional d
 - [git-cadence.grok.me/u/ravidsrk/2025](https://git-cadence.grok.me/u/ravidsrk/2025) — year recap
 - [git-cadence.grok.me/compare/gaearon/yyx990803](https://git-cadence.grok.me/compare/gaearon/yyx990803) — two calendars
 - [git-cadence.grok.me/compare/gaearon/yyx990803?y=2025](https://git-cadence.grok.me/compare/gaearon/yyx990803?y=2025) — the same pair for 2025
-- [git-cadence.grok.me/board](https://git-cadence.grok.me/board) — opt-in shipping board
+- [git-cadence.grok.me/board](https://git-cadence.grok.me/board) — biggest single day on the board
+- [git-cadence.grok.me/board?d=2026-09-14](https://git-cadence.grok.me/board?d=2026-09-14) — that calendar day only
 
 **Copy link** writes the current profile, day, and year to the clipboard. **Share** opens X, plus card / heatmap / CSV / badge / embed. Recap and Compare sit next to the loaded profile.
 

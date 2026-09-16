@@ -163,5 +163,72 @@ describe("rankBoard", () => {
     assert.equal(ranked[2]?.username, "gone");
     assert.ok(ranked[2]?.error);
   });
+
+  it("ranks by peak day and by a picked date", () => {
+    const rows = [
+      {
+        username: "slow",
+        calendar: {
+          username: "slow",
+          profile: {
+            login: "slow",
+            name: null,
+            avatarUrl: "",
+            htmlUrl: "",
+            bio: null,
+          },
+          range: { from: "2026-01-01", to: "2026-01-03" },
+          days: [
+            { date: "2026-01-01", count: 9, level: 3 },
+            { date: "2026-01-02", count: 0, level: 0 },
+            { date: "2026-01-03", count: 1, level: 1 },
+          ],
+          stats: {
+            total: 10,
+            today: 1,
+            week: 10,
+            currentStreak: 1,
+            longestStreak: 1,
+            bestDay: { date: "2026-01-01", count: 9 },
+            activeDays: 2,
+          },
+        },
+      },
+      {
+        username: "fast",
+        calendar: {
+          username: "fast",
+          profile: {
+            login: "fast",
+            name: null,
+            avatarUrl: "",
+            htmlUrl: "",
+            bio: null,
+          },
+          range: { from: "2026-01-01", to: "2026-01-03" },
+          days: [
+            { date: "2026-01-01", count: 2, level: 1 },
+            { date: "2026-01-02", count: 4, level: 2 },
+            { date: "2026-01-03", count: 12, level: 4 },
+          ],
+          stats: {
+            total: 18,
+            today: 12,
+            week: 18,
+            currentStreak: 3,
+            longestStreak: 3,
+            bestDay: { date: "2026-01-03", count: 12 },
+            activeDays: 3,
+          },
+        },
+      },
+    ];
+    const peak = rankBoard(rows, "peak");
+    assert.equal(peak[0]?.username, "fast");
+    assert.equal(peak[0]?.bestDay?.count, 12);
+    const onFirst = rankBoard(rows, "day", "2026-01-01");
+    assert.equal(onFirst[0]?.username, "slow");
+    assert.equal(onFirst[0]?.byDate["2026-01-01"], 9);
+  });
 });
 

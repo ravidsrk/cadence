@@ -39,7 +39,7 @@ async function mapPool<T, R>(
   return out;
 }
 
-export async function loadBoard(sort: BoardSort = "streak"): Promise<BoardPayload> {
+export async function loadBoard(sort: BoardSort = "peak"): Promise<BoardPayload> {
   const today = todayIso();
   const usernames = await listedUsernames();
   const calendars = await mapPool(usernames, 5, (username) =>
