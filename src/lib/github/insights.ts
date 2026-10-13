@@ -95,14 +95,24 @@ export function shareText(input: {
   rangeLabel: string;
   dayCount?: number;
   dayLabel?: string;
+  mergedCount?: number;
   url: string;
 }): string {
   const who = input.name?.trim() || input.login;
   const lines: string[] = [];
-  if (input.dayLabel != null && input.dayCount != null) {
-    lines.push(
-      `${who} · ${input.dayCount} public commits on ${input.dayLabel}`,
-    );
+  if (input.dayLabel) {
+    const bits: string[] = [];
+    if (input.mergedCount != null) {
+      bits.push(
+        `${input.mergedCount} PR${input.mergedCount === 1 ? "" : "s"} merged`,
+      );
+    }
+    if (input.dayCount != null) {
+      bits.push(`${input.dayCount} public commits`);
+    }
+    if (bits.length) {
+      lines.push(`${who} · ${bits.join(" · ")} on ${input.dayLabel}`);
+    }
   }
   lines.push(
     `${input.streak}-day streak · ${input.total.toLocaleString("en-IN")} contributions · ${input.rangeLabel}`,

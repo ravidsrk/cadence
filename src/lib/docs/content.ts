@@ -73,6 +73,10 @@ export const DOC_SECTIONS: DocSection[] = [
         type: "dl",
         items: [
           {
+            term: "Merged pull requests",
+            def: "Public pull requests merged on that UTC day that this login opened or merged. Private repositories are not included. Cadence lists up to the first 30.",
+          },
+          {
             term: "Public commits",
             def: "Commits GitHub search reports as authored by that login on that UTC calendar day, on public default branches. Cadence lists up to the first 100.",
           },

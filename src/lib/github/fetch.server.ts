@@ -1,4 +1,5 @@
 import { assignLevels, computeStats } from "./stats";
+import { parseMergedPulls, mergedPullQueries, type SearchPullItem } from "./pulls";
 import { parseContributionHtml, parseJogruber } from "./parse";
 import type {
   ActivitySplit,
@@ -209,16 +210,30 @@ type SearchResponse = {
   message?: string;
 };
 
+type SearchIssueResponse = {
+  total_count?: number;
+  incomplete_results?: boolean;
+  items?: SearchPullItem[];
+  message?: string;
+};
+
 export async function fetchDayCommits(input: {
   username: string;
   date: string;
 }): Promise<DayCommitsPayload | GithubFnError> {
   const { username, date } = input;
   try {
-    return await cached(`day:${username}:${date}`, async () => {
-      const query = `author:${username} author-date:${date}`;
-      const url = `https://api.github.com/search/commits?q=${encodeURIComponent(query)}&sort=author-date&order=desc&per_page=100`;
-      const res = await githubJson<SearchResponse>(url);
+    return await cached(`day:v3:${username}:${date}`, async () => {
+      const commitQuery = `author:${username} author-date:${date}`;
+      const commitUrl = `https://api.github.com/search/commits?q=${encodeURIComponent(commitQuery)}&sort=author-date&order=desc&per_page=100`;
+      const queries = mergedPullQueries(username, date);
+      const openedUrl = `https://api.github.com/search/issues?q=${encodeURIComponent(queries.opened)}&sort=updated&order=desc&per_page=30`;
+      const mergedUrl = `https://api.github.com/search/issues?q=${encodeURIComponent(queries.merged)}&sort=updated&order=desc&per_page=30`;
+      const [res, opened, mergedBy] = await Promise.all([
+        githubJson<SearchResponse>(commitUrl),
+        githubJson<SearchIssueResponse>(openedUrl),
+        githubJson<SearchIssueResponse>(mergedUrl),
+      ]);
       if (res.status === 403 || res.status === 429) {
         return error(
           "rate_limit",
@@ -226,7 +241,7 @@ export async function fetchDayCommits(input: {
         );
       }
       if (res.status === 422) {
-        return { date, total: 0, incomplete: false, commits: [] };
+        return emptyDay(date);
       }
       if (res.status >= 400 || !res.body) {
         return error(
@@ -257,16 +272,65 @@ export async function fetchDayCommits(input: {
         });
       }
 
+      const mergedLimited =
+        opened.status === 403 ||
+        opened.status === 429 ||
+        mergedBy.status === 403 ||
+        mergedBy.status === 429;
+      const openedItems =
+        opened.status >= 400 || !opened.body ? [] : (opened.body.items ?? []);
+      const mergedItems =
+        mergedBy.status >= 400 || !mergedBy.body
+          ? []
+          : (mergedBy.body.items ?? []);
+      const merged = parseMergedPulls(
+        username,
+        [...openedItems, ...mergedItems],
+        date,
+      );
+      const openedTotal = opened.body?.total_count ?? openedItems.length;
+      const mergedByTotal = mergedBy.body?.total_count ?? mergedItems.length;
+      const bothComplete =
+        openedItems.length >= openedTotal && mergedItems.length >= mergedByTotal;
+      const mergedFailed =
+        (opened.status >= 400 || !opened.body) &&
+        (mergedBy.status >= 400 || !mergedBy.body);
+
       return {
         date,
         total: res.body.total_count ?? commits.length,
         incomplete: Boolean(res.body.incomplete_results),
         commits,
+        mergedTotal: bothComplete
+          ? merged.length
+          : openedTotal + mergedByTotal,
+        mergedIncomplete:
+          !bothComplete ||
+          Boolean(opened.body?.incomplete_results) ||
+          Boolean(mergedBy.body?.incomplete_results),
+        merged,
+        mergedError: mergedLimited
+          ? "GitHub PR search is rate-limited."
+          : mergedFailed
+            ? "Could not load merged pull requests for that day."
+            : undefined,
       };
     });
   } catch {
     return error("unavailable", "Could not load public commits for that day.");
   }
+}
+
+function emptyDay(date: string): DayCommitsPayload {
+  return {
+    date,
+    total: 0,
+    incomplete: false,
+    commits: [],
+    mergedTotal: 0,
+    mergedIncomplete: false,
+    merged: [],
+  };
 }
 
 type GithubRepo = {

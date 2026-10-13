@@ -39,11 +39,24 @@ export type DayCommit = {
   authorName: string;
 };
 
+export type DayPull = {
+  number: number;
+  title: string;
+  htmlUrl: string;
+  repo: string;
+  mergedAt: string;
+  role: "opened" | "merged";
+};
+
 export type DayCommitsPayload = {
   date: string;
   total: number;
   incomplete: boolean;
   commits: DayCommit[];
+  mergedTotal: number;
+  mergedIncomplete: boolean;
+  merged: DayPull[];
+  mergedError?: string;
 };
 
 export type GithubFnError = {

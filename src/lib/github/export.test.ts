@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { compareDelta } from "./compare.ts";
+import { parseMergedPulls, mergedPullQueries } from "./pulls.ts";
 import { rankBoard } from "./board.ts";
 import { calendarCsv } from "./csv.ts";
 import { quietStats } from "./gaps.ts";
@@ -229,6 +230,36 @@ describe("rankBoard", () => {
     const onFirst = rankBoard(rows, "day", "2026-01-01");
     assert.equal(onFirst[0]?.username, "slow");
     assert.equal(onFirst[0]?.byDate["2026-01-01"], 9);
+  });
+});
+
+describe("merged pulls", () => {
+  it("builds the day query and marks opened vs merged", () => {
+    const queries = mergedPullQueries("torvalds", "2026-10-01");
+    assert.match(queries.opened, /author:torvalds/);
+    assert.match(queries.merged, /merged-by:torvalds/);
+    const pulls = parseMergedPulls(
+      "torvalds",
+      [
+        {
+          number: 9,
+          title: "Land it",
+          html_url: "https://github.com/torvalds/linux/pull/9",
+          user: { login: "someone" },
+          pull_request: { merged_at: "2026-10-01T12:00:00Z" },
+        },
+        {
+          number: 4,
+          title: "Mine",
+          html_url: "https://github.com/org/repo/pull/4",
+          user: { login: "Torvalds" },
+        },
+      ],
+      "2026-10-01",
+    );
+    assert.equal(pulls[0]?.role, "merged");
+    assert.equal(pulls[0]?.repo, "torvalds/linux");
+    assert.equal(pulls[1]?.role, "opened");
   });
 });
 

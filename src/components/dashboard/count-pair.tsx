@@ -10,14 +10,38 @@ export function CountPair({
   commitsHint,
   commitsError,
   contribLabel,
+  mergedLabel,
+  mergedHint,
+  mergedError,
 }: {
   commitsLabel: string;
   commitsHint: string;
   commitsError?: string;
   contribLabel: string;
+  mergedLabel: string;
+  mergedHint: string;
+  mergedError?: string;
 }) {
   return (
     <div className="mt-6 flex flex-wrap items-end gap-8">
+      <div>
+        <p className="flex items-center gap-1.5 text-xs tracking-wide text-muted-foreground uppercase">
+          Merged PRs
+          <Why
+            text="Public pull requests merged on that UTC day that this login opened or merged. Private repositories are not included. Cadence lists up to the first 30."
+          />
+        </p>
+        <p className="mt-1 font-mono text-5xl leading-none font-medium tracking-tight tabular-nums sm:text-6xl">
+          {mergedLabel}
+        </p>
+        {mergedError ? (
+          <p className="mt-2 max-w-xs text-xs text-muted-foreground">
+            {mergedError}
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">{mergedHint}</p>
+        )}
+      </div>
       <div>
         <p className="flex items-center gap-1.5 text-xs tracking-wide text-muted-foreground uppercase">
           Public commits
@@ -25,7 +49,7 @@ export function CountPair({
             text="Commits GitHub search reports as authored by this login on that UTC day, on public default branches. Cadence lists up to the first 100."
           />
         </p>
-        <p className="mt-1 font-mono text-5xl leading-none font-medium tracking-tight tabular-nums sm:text-6xl">
+        <p className="mt-1 font-mono text-3xl font-medium tabular-nums">
           {commitsLabel}
         </p>
         {commitsError ? (

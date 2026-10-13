@@ -35,6 +35,7 @@ import {
   type CalendarLoaderData,
   type DayCommit,
   type DayCount,
+  type DayPull,
 } from "@/lib/github/types";
 import { normalizeUsername } from "@/lib/github/username";
 import { SITE_ORIGIN } from "@/lib/site";
@@ -311,6 +312,7 @@ export function CadenceApp({
       rangeLabel,
       dayCount: commits?.total,
       dayLabel: format(parseISO(selectedDate), "d MMM yyyy"),
+      mergedCount: commits?.mergedTotal,
       url,
     });
     window.open(
@@ -538,6 +540,9 @@ export function CadenceApp({
               commitsHint="Authored on public default branches"
               commitsError={commitsError?.error}
               contribLabel={selectedDay ? formatCount(selectedDay.count) : "—"}
+              mergedLabel={commits ? formatCount(commits.mergedTotal) : "—"}
+              mergedHint="Opened or merged by this login"
+              mergedError={commits?.mergedError}
             />
           )}
         </div>
@@ -696,6 +701,23 @@ export function CadenceApp({
 
         <div className="rounded-2xl bg-card p-5 shadow-[var(--shadow-border)] sm:p-6">
           <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="font-display text-lg">Merged pull requests</h2>
+            {commits ? (
+              <Badge>
+                {formatCount(commits.mergedTotal)} public
+                {commits.mergedIncomplete ||
+                commits.mergedTotal > commits.merged.length
+                  ? " · first 30"
+                  : ""}
+              </Badge>
+            ) : null}
+          </div>
+          <PullList
+            loading={commitsQuery.isPending && !commits}
+            error={commits?.mergedError}
+            pulls={commits?.merged ?? []}
+          />
+          <div className="mt-6 mb-3 flex items-baseline justify-between gap-3">
             <h2 className="font-display text-lg">Commit log</h2>
             {commits ? (
               <Badge>
@@ -781,6 +803,59 @@ function StatCard({
       </p>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
     </div>
+  );
+}
+
+function PullList({
+  loading,
+  error,
+  pulls,
+}: {
+  loading: boolean;
+  error?: string;
+  pulls: DayPull[];
+}) {
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
+    );
+  }
+  if (error && pulls.length === 0) {
+    return <p className="text-sm text-muted-foreground">{error}</p>;
+  }
+  if (pulls.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No public pull requests opened or merged by this login on this day.
+      </p>
+    );
+  }
+  return (
+    <ul className="max-h-72 space-y-2 overflow-y-auto pr-1">
+      {pulls.map((pull) => (
+        <li key={pull.htmlUrl}>
+          <a
+            href={pull.htmlUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(
+              "block rounded-xl bg-secondary/60 p-3 shadow-[var(--shadow-border)]",
+              "transition-[background-color] duration-150 ease-out hover:bg-secondary",
+            )}
+          >
+            <p className="text-sm leading-snug text-pretty">{pull.title}</p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">
+              {pull.repo} · #{pull.number} ·{" "}
+              {pull.role === "opened" ? "opened" : "merged"}
+            </p>
+          </a>
+        </li>
+      ))}
+    </ul>
   );
 }
 
