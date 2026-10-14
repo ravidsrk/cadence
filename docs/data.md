@@ -21,7 +21,7 @@ Heatmap days follow GitHubâ€™s contribution calendar. Commit search uses GitHubâ
 ## Limits
 
 - Private repositories never appear in the commit log, even when they shade the heatmap.
-- Commit search can mark results incomplete, and Cadence only lists the first 100 public commits for a day.
+- Commit search can mark results incomplete. Cadence lists every public commit and merged pull request GitHub search returns for that day, up to 1,000 each.
 - GitHub rate limits unauthenticated traffic. If search is limited, the heatmap still tries to load.
 - Forks, bots, and unusual author emails can make search miss commits you still see on GitHub.
 

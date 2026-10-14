@@ -8,6 +8,19 @@ export type SearchPullItem = {
   pull_request?: { merged_at?: string | null };
 };
 
+export const SEARCH_PAGE = 100;
+export const SEARCH_CAP = 1000;
+
+export function searchPageCount(
+  total: number,
+  perPage = SEARCH_PAGE,
+  cap = SEARCH_CAP,
+): number {
+  const bounded = Math.min(Math.max(total, 0), cap);
+  if (bounded === 0) return 1;
+  return Math.ceil(bounded / perPage);
+}
+
 export function mergedPullQueries(username: string, date: string): {
   opened: string;
   merged: string;

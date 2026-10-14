@@ -541,7 +541,7 @@ export function CadenceApp({
               commitsError={commitsError?.error}
               contribLabel={selectedDay ? formatCount(selectedDay.count) : "—"}
               mergedLabel={commits ? formatCount(commits.mergedTotal) : "—"}
-              mergedHint="Opened or merged by this login"
+              mergedHint="Public PRs merged that day"
               mergedError={commits?.mergedError}
             />
           )}
@@ -686,45 +686,26 @@ export function CadenceApp({
         </div>
       </section>
 
+      <section className="rounded-2xl bg-card p-5 shadow-[var(--shadow-border)] sm:p-6">
+        <h2 className="font-display text-lg">Last 14 days</h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          Contribution volume, ending at the selected day
+        </p>
+        {calendar ? (
+          <WeekChart days={calendar.days} selectedDate={selectedDate} />
+        ) : (
+          <Skeleton className="h-44 w-full" />
+        )}
+      </section>
+
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl bg-card p-5 shadow-[var(--shadow-border)] sm:p-6">
-          <h2 className="font-display text-lg">Last 14 days</h2>
-          <p className="mb-3 text-sm text-muted-foreground">
-            Contribution volume, ending at the selected day
-          </p>
-          {calendar ? (
-            <WeekChart days={calendar.days} selectedDate={selectedDate} />
-          ) : (
-            <Skeleton className="h-44 w-full" />
-          )}
-        </div>
-
-        <div className="rounded-2xl bg-card p-5 shadow-[var(--shadow-border)] sm:p-6">
           <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h2 className="font-display text-lg">Merged pull requests</h2>
-            {commits ? (
-              <Badge>
-                {formatCount(commits.mergedTotal)} public
-                {commits.mergedIncomplete ||
-                commits.mergedTotal > commits.merged.length
-                  ? " · first 30"
-                  : ""}
-              </Badge>
-            ) : null}
-          </div>
-          <PullList
-            loading={commitsQuery.isPending && !commits}
-            error={commits?.mergedError}
-            pulls={commits?.merged ?? []}
-          />
-          <div className="mt-6 mb-3 flex items-baseline justify-between gap-3">
             <h2 className="font-display text-lg">Commit log</h2>
             {commits ? (
               <Badge>
-                {formatCount(commits.total)} public
-                {commits.incomplete || commits.total > commits.commits.length
-                  ? " · first 100"
-                  : ""}
+                {formatCount(commits.commits.length)} listed
+                {commits.total > commits.commits.length ? ` of ${formatCount(commits.total)}` : ""}
               </Badge>
             ) : null}
           </div>
@@ -738,7 +719,7 @@ export function CadenceApp({
               </div>
               {repos.length > 1 ? (
                 <ul className="flex flex-wrap gap-2">
-                  {repos.slice(0, 6).map((row) => (
+                  {repos.slice(0, 8).map((row) => (
                     <li key={row.repo}>
                       <Badge>
                         {row.repo} · {row.count}
@@ -751,8 +732,27 @@ export function CadenceApp({
           ) : null}
           <CommitList
             loading={commitsQuery.isPending && !commits}
-            error={commitsError?.error}
+            error={commitsError?.error ?? commits?.commitsError}
             commits={commits?.commits ?? []}
+          />
+        </div>
+
+        <div className="rounded-2xl bg-card p-5 shadow-[var(--shadow-border)] sm:p-6">
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="font-display text-lg">Pull requests merged</h2>
+            {commits ? (
+              <Badge>
+                {formatCount(commits.merged.length)} listed
+                {commits.mergedTotal > commits.merged.length
+                  ? ` of ${formatCount(commits.mergedTotal)}`
+                  : ""}
+              </Badge>
+            ) : null}
+          </div>
+          <PullList
+            loading={commitsQuery.isPending && !commits}
+            error={commits?.mergedError}
+            pulls={commits?.merged ?? []}
           />
         </div>
       </section>
@@ -830,12 +830,12 @@ function PullList({
   if (pulls.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No public pull requests opened or merged by this login on this day.
+        No public pull requests were merged by this login, or opened by them and merged, on this day.
       </p>
     );
   }
   return (
-    <ul className="max-h-72 space-y-2 overflow-y-auto pr-1">
+    <ul className="space-y-2 pr-1">
       {pulls.map((pull) => (
         <li key={pull.htmlUrl}>
           <a
@@ -889,7 +889,7 @@ function CommitList({
     );
   }
   return (
-    <ul className="max-h-72 space-y-2 overflow-y-auto pr-1">
+    <ul className="space-y-2 pr-1">
       {commits.map((commit) => (
         <li key={commit.sha + commit.htmlUrl}>
           <a

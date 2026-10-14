@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { compareDelta } from "./compare.ts";
-import { parseMergedPulls, mergedPullQueries } from "./pulls.ts";
+import { parseMergedPulls, mergedPullQueries, searchPageCount } from "./pulls.ts";
 import { rankBoard } from "./board.ts";
 import { calendarCsv } from "./csv.ts";
 import { quietStats } from "./gaps.ts";
@@ -260,6 +260,10 @@ describe("merged pulls", () => {
     assert.equal(pulls[0]?.role, "merged");
     assert.equal(pulls[0]?.repo, "torvalds/linux");
     assert.equal(pulls[1]?.role, "opened");
+    assert.equal(searchPageCount(0), 1);
+    assert.equal(searchPageCount(100), 1);
+    assert.equal(searchPageCount(101), 2);
+    assert.equal(searchPageCount(5000), 10);
   });
 });
 

@@ -1,5 +1,12 @@
 import { assignLevels, computeStats } from "./stats";
-import { parseMergedPulls, mergedPullQueries, type SearchPullItem } from "./pulls";
+import {
+  parseMergedPulls,
+  mergedPullQueries,
+  searchPageCount,
+  SEARCH_CAP,
+  SEARCH_PAGE,
+  type SearchPullItem,
+} from "./pulls";
 import { parseContributionHtml, parseJogruber } from "./parse";
 import type {
   ActivitySplit,
@@ -210,12 +217,71 @@ type SearchResponse = {
   message?: string;
 };
 
-type SearchIssueResponse = {
-  total_count?: number;
-  incomplete_results?: boolean;
-  items?: SearchPullItem[];
-  message?: string;
-};
+async function mapPool<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const out: R[] = new Array(items.length);
+  let next = 0;
+  async function worker() {
+    while (next < items.length) {
+      const index = next++;
+      const item = items[index];
+      if (item === undefined) return;
+      out[index] = await fn(item);
+    }
+  }
+  const n = Math.min(Math.max(limit, 1), items.length || 1);
+  await Promise.all(Array.from({ length: n }, () => worker()));
+  return out;
+}
+
+async function searchPages<T>(
+  urlForPage: (page: number) => string,
+): Promise<{
+  status: number;
+  total: number;
+  incomplete: boolean;
+  items: T[];
+}> {
+  const first = await githubJson<{
+    total_count?: number;
+    incomplete_results?: boolean;
+    items?: T[];
+  }>(urlForPage(1));
+  if (first.status >= 400 || !first.body) {
+    return { status: first.status, total: 0, incomplete: false, items: [] };
+  }
+  const total = first.body.total_count ?? first.body.items?.length ?? 0;
+  const pages = searchPageCount(total);
+  const items = [...(first.body.items ?? [])];
+  if (pages > 1) {
+    const rest = await mapPool(
+      Array.from({ length: pages - 1 }, (_, index) => index + 2),
+      4,
+      (page) =>
+        githubJson<{ items?: T[] }>(urlForPage(page)),
+    );
+    for (const page of rest) {
+      if (page.body?.items) items.push(...page.body.items);
+    }
+  }
+  return {
+    status: first.status,
+    total,
+    incomplete: Boolean(first.body.incomplete_results) || total > SEARCH_CAP,
+    items: items.slice(0, SEARCH_CAP),
+  };
+}
+
+function commitSearchUrl(query: string, page: number): string {
+  return `https://api.github.com/search/commits?q=${encodeURIComponent(query)}&sort=author-date&order=desc&per_page=${SEARCH_PAGE}&page=${page}`;
+}
+
+function issueSearchUrl(query: string, page: number): string {
+  return `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=${SEARCH_PAGE}&page=${page}`;
+}
 
 export async function fetchDayCommits(input: {
   username: string;
@@ -223,37 +289,28 @@ export async function fetchDayCommits(input: {
 }): Promise<DayCommitsPayload | GithubFnError> {
   const { username, date } = input;
   try {
-    return await cached(`day:v3:${username}:${date}`, async () => {
-      const commitQuery = `author:${username} author-date:${date}`;
-      const commitUrl = `https://api.github.com/search/commits?q=${encodeURIComponent(commitQuery)}&sort=author-date&order=desc&per_page=100`;
+    return await cached(`day:v4:${username}:${date}`, async () => {
       const queries = mergedPullQueries(username, date);
-      const openedUrl = `https://api.github.com/search/issues?q=${encodeURIComponent(queries.opened)}&sort=updated&order=desc&per_page=30`;
-      const mergedUrl = `https://api.github.com/search/issues?q=${encodeURIComponent(queries.merged)}&sort=updated&order=desc&per_page=30`;
-      const [res, opened, mergedBy] = await Promise.all([
-        githubJson<SearchResponse>(commitUrl),
-        githubJson<SearchIssueResponse>(openedUrl),
-        githubJson<SearchIssueResponse>(mergedUrl),
+      const [commitsRes, openedRes, mergedRes] = await Promise.all([
+        searchPages<SearchCommit>(
+          (page) =>
+            commitSearchUrl(`author:${username} author-date:${date}`, page),
+        ),
+        searchPages<SearchPullItem>((page) =>
+          issueSearchUrl(queries.opened, page),
+        ),
+        searchPages<SearchPullItem>((page) =>
+          issueSearchUrl(queries.merged, page),
+        ),
       ]);
-      if (res.status === 403 || res.status === 429) {
-        return error(
-          "rate_limit",
-          "GitHub commit search is rate-limited. The heatmap still works.",
-        );
-      }
-      if (res.status === 422) {
-        return emptyDay(date);
-      }
-      if (res.status >= 400 || !res.body) {
-        return error(
-          "unavailable",
-          "Could not load public commits for that day.",
-        );
-      }
 
-      const items = res.body.items ?? [];
+      const commitsLimited =
+        commitsRes.status === 403 || commitsRes.status === 429;
+      const commitsFailed =
+        commitsRes.status >= 400 && commitsRes.status !== 422;
       const commits: DayCommit[] = [];
       const seen = new Set<string>();
-      for (const item of items) {
+      for (const item of commitsRes.items) {
         const sha = item.sha ?? "";
         if (!sha || seen.has(sha)) continue;
         seen.add(sha);
@@ -261,7 +318,8 @@ export async function fetchDayCommits(input: {
         const repoMatch = htmlUrl.match(
           /github\.com\/([^/]+)\/([^/]+)\/commit\//,
         );
-        const message = (item.commit?.message ?? "").split("\n")[0]?.trim() ?? "";
+        const message =
+          (item.commit?.message ?? "").split("\n")[0]?.trim() ?? "";
         commits.push({
           sha: sha.slice(0, 7),
           message: message.slice(0, 160) || "Commit",
@@ -273,41 +331,41 @@ export async function fetchDayCommits(input: {
       }
 
       const mergedLimited =
-        opened.status === 403 ||
-        opened.status === 429 ||
-        mergedBy.status === 403 ||
-        mergedBy.status === 429;
-      const openedItems =
-        opened.status >= 400 || !opened.body ? [] : (opened.body.items ?? []);
-      const mergedItems =
-        mergedBy.status >= 400 || !mergedBy.body
-          ? []
-          : (mergedBy.body.items ?? []);
+        openedRes.status === 403 ||
+        openedRes.status === 429 ||
+        mergedRes.status === 403 ||
+        mergedRes.status === 429;
+      const mergedFailed =
+        openedRes.status >= 400 &&
+        openedRes.status !== 422 &&
+        mergedRes.status >= 400 &&
+        mergedRes.status !== 422;
       const merged = parseMergedPulls(
         username,
-        [...openedItems, ...mergedItems],
+        [...openedRes.items, ...mergedRes.items],
         date,
       );
-      const openedTotal = opened.body?.total_count ?? openedItems.length;
-      const mergedByTotal = mergedBy.body?.total_count ?? mergedItems.length;
+      const openedTotal = openedRes.status < 400 ? openedRes.total : 0;
+      const mergedByTotal = mergedRes.status < 400 ? mergedRes.total : 0;
       const bothComplete =
-        openedItems.length >= openedTotal && mergedItems.length >= mergedByTotal;
-      const mergedFailed =
-        (opened.status >= 400 || !opened.body) &&
-        (mergedBy.status >= 400 || !mergedBy.body);
+        openedRes.status < 400 &&
+        mergedRes.status < 400 &&
+        openedRes.items.length >= Math.min(openedTotal, SEARCH_CAP) &&
+        mergedRes.items.length >= Math.min(mergedByTotal, SEARCH_CAP);
 
       return {
         date,
-        total: res.body.total_count ?? commits.length,
-        incomplete: Boolean(res.body.incomplete_results),
+        total: commitsFailed ? 0 : commitsRes.total,
+        incomplete: commitsRes.incomplete,
         commits,
-        mergedTotal: bothComplete
-          ? merged.length
-          : openedTotal + mergedByTotal,
+        commitsError: commitsLimited
+          ? "GitHub commit search is rate-limited. The heatmap still works."
+          : commitsFailed
+            ? "Could not load public commits for that day."
+            : undefined,
+        mergedTotal: bothComplete ? merged.length : openedTotal + mergedByTotal,
         mergedIncomplete:
-          !bothComplete ||
-          Boolean(opened.body?.incomplete_results) ||
-          Boolean(mergedBy.body?.incomplete_results),
+          !bothComplete || openedRes.incomplete || mergedRes.incomplete,
         merged,
         mergedError: mergedLimited
           ? "GitHub PR search is rate-limited."
@@ -317,20 +375,8 @@ export async function fetchDayCommits(input: {
       };
     });
   } catch {
-    return error("unavailable", "Could not load public commits for that day.");
+    return error("unavailable", "Could not load that day from GitHub.");
   }
-}
-
-function emptyDay(date: string): DayCommitsPayload {
-  return {
-    date,
-    total: 0,
-    incomplete: false,
-    commits: [],
-    mergedTotal: 0,
-    mergedIncomplete: false,
-    merged: [],
-  };
 }
 
 type GithubRepo = {

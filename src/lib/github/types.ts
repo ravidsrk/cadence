@@ -53,6 +53,7 @@ export type DayCommitsPayload = {
   total: number;
   incomplete: boolean;
   commits: DayCommit[];
+  commitsError?: string;
   mergedTotal: number;
   mergedIncomplete: boolean;
   merged: DayPull[];

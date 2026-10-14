@@ -74,11 +74,11 @@ export const DOC_SECTIONS: DocSection[] = [
         items: [
           {
             term: "Merged pull requests",
-            def: "Public pull requests merged on that UTC day that this login opened or merged. Private repositories are not included. Cadence lists up to the first 30.",
+            def: "Every public pull request merged on that UTC day that this login opened or merged. GitHub search stops at 1,000.",
           },
           {
             term: "Public commits",
-            def: "Commits GitHub search reports as authored by that login on that UTC calendar day, on public default branches. Cadence lists up to the first 100.",
+            def: "Every public commit GitHub search reports as authored by that login on that UTC day, on the default branch. GitHub search stops at 1,000.",
           },
           {
             term: "GitHub contributions",
@@ -323,7 +323,7 @@ export const DOC_SECTIONS: DocSection[] = [
         type: "ul",
         items: [
           "Private repositories never appear in the commit log, even when they shade the heatmap.",
-          "Commit search can mark results incomplete, and Cadence only lists the first 100 public commits for a day.",
+          "Commit search can mark results incomplete. Cadence lists every public commit and merged pull request GitHub search returns for that day, up to 1,000 each.",
           "GitHub rate limits unauthenticated traffic. If search is limited, the heatmap still tries to load.",
           "Forks, bots, and unusual author emails can make search miss commits you still see on GitHub.",
         ],
