@@ -537,7 +537,11 @@ export function CadenceApp({
           ) : (
             <CountPair
               commitsLabel={commits ? formatCount(commits.total) : "—"}
-              commitsHint="Authored on public default branches"
+              commitsHint={
+                commits && commits.privateTotal > 0
+                  ? `${formatCount(commits.publicTotal)} public · ${formatCount(commits.privateTotal)} private`
+                  : "Public and private, when GitHub returns them"
+              }
               commitsError={commitsError?.error}
               contribLabel={selectedDay ? formatCount(selectedDay.count) : "—"}
               mergedLabel={commits ? formatCount(commits.mergedTotal) : "—"}
@@ -704,8 +708,10 @@ export function CadenceApp({
             <h2 className="font-display text-lg">Commit log</h2>
             {commits ? (
               <Badge>
-                {formatCount(commits.commits.length)} listed
-                {commits.total > commits.commits.length ? ` of ${formatCount(commits.total)}` : ""}
+                {formatCount(commits.publicTotal)} public
+                {commits.privateTotal > 0
+                  ? ` · ${formatCount(commits.privateTotal)} private`
+                  : ""}
               </Badge>
             ) : null}
           </div>

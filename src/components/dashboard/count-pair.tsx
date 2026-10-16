@@ -44,9 +44,9 @@ export function CountPair({
       </div>
       <div>
         <p className="flex items-center gap-1.5 text-xs tracking-wide text-muted-foreground uppercase">
-          Public commits
+          Commits
           <Why
-            text="Every public commit GitHub search reports as authored by this login on that UTC day, on the default branch. GitHub search stops at 1,000."
+            text="Public and private commits authored that UTC day. Private commits are counted, not listed. GitHub search stops at 1,000."
           />
         </p>
         <p className="mt-1 font-mono text-4xl leading-none font-medium tracking-tight tabular-nums sm:text-5xl">

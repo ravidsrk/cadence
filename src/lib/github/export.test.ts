@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { compareDelta } from "./compare.ts";
+import { countCommits } from "./commits.ts";
 import { parseMergedPulls, mergedPullQueries, searchPageCount } from "./pulls.ts";
 import { rankBoard } from "./board.ts";
 import { calendarCsv } from "./csv.ts";
@@ -264,6 +265,14 @@ describe("merged pulls", () => {
     assert.equal(searchPageCount(100), 1);
     assert.equal(searchPageCount(101), 2);
     assert.equal(searchPageCount(5000), 10);
+    const counted = countCommits({
+      reportedTotal: 514,
+      publicSeen: 182,
+      privateSeen: 332,
+    });
+    assert.equal(counted.total, 514);
+    assert.equal(counted.publicTotal, 182);
+    assert.equal(counted.privateTotal, 332);
   });
 });
 

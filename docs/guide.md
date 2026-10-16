@@ -16,7 +16,7 @@ Click a heatmap square, use **Pick day**, or pass `?d=YYYY-MM-DD` on a profile U
 
 | Number | Meaning |
 | --- | --- |
-| **Public commits** | Every public commit GitHub search reports as authored by that login on that UTC day, on the default branch. Search stops at 1,000. |
+| **Commits** | Public and private commits authored that UTC day. Private commits are counted, not listed. Search stops at 1,000. |
 | **GitHub contributions** | The number on that square of GitHub’s contribution graph: commits, pull requests, reviews, and issues, including private work GitHub is allowed to count. |
 
 These two numbers often disagree. A green square with an empty log is normal: private repos, issues, reviews, and pull requests still count as contributions.

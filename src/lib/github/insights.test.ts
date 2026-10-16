@@ -104,7 +104,7 @@ describe("share helpers", () => {
       dayLabel: "1 Sep 2026",
       url,
     });
-    assert.match(text, /Ravindra · 8 public commits on 1 Sep 2026/);
+    assert.match(text, /Ravindra · 8 commits on 1 Sep 2026/);
     assert.match(text, /12-day streak/);
     assert.match(text, /1,204/);
   });

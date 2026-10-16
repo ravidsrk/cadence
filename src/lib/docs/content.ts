@@ -77,8 +77,8 @@ export const DOC_SECTIONS: DocSection[] = [
             def: "Every public pull request merged on that UTC day that this login opened or merged. GitHub search stops at 1,000.",
           },
           {
-            term: "Public commits",
-            def: "Every public commit GitHub search reports as authored by that login on that UTC day, on the default branch. GitHub search stops at 1,000.",
+            term: "Commits",
+            def: "Public and private commits authored that UTC day. The list shows public commits only. Private commits are counted and not shown. GitHub search stops at 1,000.",
           },
           {
             term: "GitHub contributions",
@@ -340,7 +340,7 @@ export const DOC_SECTIONS: DocSection[] = [
       },
       {
         type: "p",
-        text: "Contributions include pull requests, reviews, issues, and private work GitHub counts. Public commits are only authored commits on public default branches that search returned for that UTC day.",
+        text: "Contributions include pull requests, reviews, issues, and private work GitHub counts. The commit number includes public and private commits. Only public commits are listed.",
       },
       {
         type: "h3",

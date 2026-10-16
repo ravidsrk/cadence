@@ -108,7 +108,7 @@ export function shareText(input: {
       );
     }
     if (input.dayCount != null) {
-      bits.push(`${input.dayCount} public commits`);
+      bits.push(`${input.dayCount} commits`);
     }
     if (bits.length) {
       lines.push(`${who} · ${bits.join(" · ")} on ${input.dayLabel}`);

@@ -1,4 +1,6 @@
+import { execFileSync } from "node:child_process";
 import { assignLevels, computeStats } from "./stats";
+import { countCommits } from "./commits";
 import {
   parseMergedPulls,
   mergedPullQueries,
@@ -23,12 +25,17 @@ const CACHE_TTL_MS = 8 * 60 * 1000;
 const CACHE_MAX = 240;
 const cache = new Map<string, { at: number; value: unknown }>();
 
-function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
+function cached<T>(
+  key: string,
+  load: () => Promise<T>,
+  keep: (value: T) => boolean = () => true,
+): Promise<T> {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
     return Promise.resolve(hit.value as T);
   }
   return load().then((value) => {
+    if (!keep(value)) return value;
     cache.set(key, { at: Date.now(), value });
     if (cache.size > CACHE_MAX) {
       const oldest = cache.keys().next().value;
@@ -42,13 +49,35 @@ function error(code: GithubFnError["code"], message: string): GithubFnError {
   return { error: message, code };
 }
 
+let resolvedToken: string | null | undefined;
+
+function githubToken(): string | undefined {
+  if (resolvedToken !== undefined) return resolvedToken ?? undefined;
+  const env = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  if (env?.trim()) {
+    resolvedToken = env.trim();
+    return resolvedToken;
+  }
+  try {
+    const token = execFileSync("gh", ["auth", "token"], {
+      encoding: "utf8",
+      timeout: 5000,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    resolvedToken = token || null;
+  } catch {
+    resolvedToken = null;
+  }
+  return resolvedToken ?? undefined;
+}
+
 function githubHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "User-Agent": UA,
   };
-  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  const token = githubToken();
   if (token) headers.Authorization = `Bearer ${token}`;
   return headers;
 }
@@ -204,6 +233,7 @@ async function loadDays(
 type SearchCommit = {
   sha?: string;
   html_url?: string;
+  repository?: { private?: boolean; full_name?: string };
   commit?: {
     message?: string;
     author?: { name?: string; date?: string };
@@ -289,7 +319,9 @@ export async function fetchDayCommits(input: {
 }): Promise<DayCommitsPayload | GithubFnError> {
   const { username, date } = input;
   try {
-    return await cached(`day:v4:${username}:${date}`, async () => {
+    return await cached(
+      `day:v6:${username}:${date}`,
+      async () => {
       const queries = mergedPullQueries(username, date);
       const [commitsRes, openedRes, mergedRes] = await Promise.all([
         searchPages<SearchCommit>(
@@ -310,10 +342,17 @@ export async function fetchDayCommits(input: {
         commitsRes.status >= 400 && commitsRes.status !== 422;
       const commits: DayCommit[] = [];
       const seen = new Set<string>();
+      let publicSeen = 0;
+      let privateSeen = 0;
       for (const item of commitsRes.items) {
         const sha = item.sha ?? "";
         if (!sha || seen.has(sha)) continue;
         seen.add(sha);
+        if (item.repository?.private) {
+          privateSeen += 1;
+          continue;
+        }
+        publicSeen += 1;
         const htmlUrl = item.html_url ?? "";
         const repoMatch = htmlUrl.match(
           /github\.com\/([^/]+)\/([^/]+)\/commit\//,
@@ -324,11 +363,18 @@ export async function fetchDayCommits(input: {
           sha: sha.slice(0, 7),
           message: message.slice(0, 160) || "Commit",
           htmlUrl,
-          repo: repoMatch ? `${repoMatch[1]}/${repoMatch[2]}` : "repository",
+          repo:
+            item.repository?.full_name ??
+            (repoMatch ? `${repoMatch[1]}/${repoMatch[2]}` : "repository"),
           authoredAt: item.commit?.author?.date ?? `${date}T00:00:00Z`,
           authorName: item.commit?.author?.name ?? username,
         });
       }
+      const counted = countCommits({
+        reportedTotal: commitsFailed ? 0 : commitsRes.total,
+        publicSeen,
+        privateSeen,
+      });
 
       const mergedLimited =
         openedRes.status === 403 ||
@@ -355,7 +401,9 @@ export async function fetchDayCommits(input: {
 
       return {
         date,
-        total: commitsFailed ? 0 : commitsRes.total,
+        total: counted.total,
+        publicTotal: counted.publicTotal,
+        privateTotal: counted.privateTotal,
         incomplete: commitsRes.incomplete,
         commits,
         commitsError: commitsLimited
@@ -373,7 +421,11 @@ export async function fetchDayCommits(input: {
             ? "Could not load merged pull requests for that day."
             : undefined,
       };
-    });
+    },
+      (value) =>
+        !value.commitsError?.includes("rate-limited") &&
+        !value.mergedError?.includes("rate-limited"),
+    );
   } catch {
     return error("unavailable", "Could not load that day from GitHub.");
   }

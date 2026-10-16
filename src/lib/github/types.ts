@@ -51,6 +51,8 @@ export type DayPull = {
 export type DayCommitsPayload = {
   date: string;
   total: number;
+  publicTotal: number;
+  privateTotal: number;
   incomplete: boolean;
   commits: DayCommit[];
   commitsError?: string;
