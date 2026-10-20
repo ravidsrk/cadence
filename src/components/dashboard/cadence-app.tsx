@@ -63,6 +63,7 @@ import {
   type CalendarLoaderData,
   type CalendarPayload,
   type DayCount,
+  type GithubFnError,
 } from "@/lib/github/types";
 import {
   isReservedRoute,
@@ -100,6 +101,10 @@ import { WeekdayChart } from "./weekday-chart";
 const STORAGE_KEY = "cadence:username";
 const VIEW_STORAGE_KEY = "cadence:view";
 export const DEFAULT_USER = "ravidsrk";
+const UNAVAILABLE_CALENDAR_ERROR: GithubFnError = {
+  error: "Could not load the calendar.",
+  code: "unavailable",
+};
 
 const TIER_THRESHOLDS = [
   { label: "Apex", range: "82–100", desc: "Top percentile consistency, streak, and daily volume" },
@@ -230,7 +235,7 @@ export function CadenceApp({
     isGithubFnError(calendarQuery.data)
       ? calendarQuery.data
       : !skeletonOverride && !forceSkeleton && calendarQuery.error
-        ? { error: "Could not load the calendar.", code: "unavailable" as const }
+        ? UNAVAILABLE_CALENDAR_ERROR
         : seededError ?? null;
 
   useEffect(() => {
@@ -415,29 +420,6 @@ export function CadenceApp({
   const canStepNext = Boolean(
     calendar && lastDayInCalendar && selectedDate < lastDayInCalendar,
   );
-
-  function persistUsername(next: string) {
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // ignore
-    }
-  }
-
-  function goProfile(next: string, nextYear?: number, nextDate?: string) {
-    persistUsername(next);
-    const to = isReservedRoute(next) ? "/u/$username" : "/$username";
-    void navigate({
-      to,
-      params: { username: next },
-      search: cadenceSearchFromState({
-        today,
-        selectedDate: nextDate ?? defaultDateForYear(nextYear),
-        year: nextYear,
-        view: viewMode,
-      }),
-    });
-  }
 
   const syncUrl = useCallback(
     (

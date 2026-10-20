@@ -96,7 +96,6 @@ export function SiteNav({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [lastViewed, setLastViewed] = useState<string | null>(null);
 
-  const displayUser = activeUsername ?? lastViewed;
   const isLanding = pathname === "/" || hideSearch;
   const isCompare = pathname.startsWith("/compare");
   const isBoard = pathname.startsWith("/board");
