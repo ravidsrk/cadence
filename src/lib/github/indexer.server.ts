@@ -46,14 +46,17 @@ const CLICKHOUSE_URL =
 let schemaReadyPromise: Promise<void> | null = null;
 
 /**
- * Idempotent runtime mirror of migrations/0003 — preview PGLite applies the
- * migration file itself, but a warm Neon instance that predates the deploy
+ * Idempotent runtime mirror of migrations/0003 and 0004 — preview PGLite applies
+ * the migration files, but a warm Neon instance that predates the deploy
  * build (or a board row written before the columns existed) must not crash.
  */
 export function ensureIndexerSchema(sql: Sql): Promise<void> {
   schemaReadyPromise ??= (async () => {
     await sql.query(`
       alter table board_profiles
+        add column if not exists calendar_json jsonb,
+        add column if not exists cached_today text,
+        add column if not exists updated_at timestamptz,
         add column if not exists login_display text,
         add column if not exists display_name text,
         add column if not exists avatar_url text,

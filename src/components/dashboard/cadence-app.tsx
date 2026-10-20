@@ -57,7 +57,7 @@ import {
   saveClientStaleCalendar,
 } from "@/lib/github/recent";
 import { cadenceSearchFromState } from "@/lib/github/search";
-import { longestStreakWindow } from "@/lib/github/stats";
+import { longestStreakWindow, weekTotal } from "@/lib/github/stats";
 import {
   isGithubFnError,
   type CalendarLoaderData,
@@ -620,12 +620,7 @@ export function CadenceApp({
     : null;
 
   const last7DaysTotal = calendar
-    ? isPastYear
-      ? calendar.days
-          .filter((d) => d.date <= selectedDate)
-          .slice(-7)
-          .reduce((sum, d) => sum + d.count, 0)
-      : calendar.stats.week
+    ? weekTotal(calendar.days, selectedDate)
     : 0;
 
   const rangeDateSpan = calendar
