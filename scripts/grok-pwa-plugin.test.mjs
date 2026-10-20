@@ -20,6 +20,7 @@ import {
 import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+process.chdir(mkdtempSync(join(tmpdir(), "grok-pwa-test-cwd-")));
 
 test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");
@@ -395,7 +396,10 @@ test("is idempotent", () => {
 });
 
 test("uses the app name in the injected title tag", () => {
-  const out = injectGrokPwaHead("<html><head></head></html>", { appName: "Wild Race" });
+  const out = injectGrokPwaHead("<html><head></head></html>", {
+    appName: "Wild Race",
+    workspaceRoot: mkdtempSync(join(tmpdir(), "pwa-app-name-")),
+  });
   assert.match(out, /apple-mobile-web-app-title" content="Wild Race"/);
 });
 
@@ -494,8 +498,7 @@ test("nitro middleware and its bundled assets exist", () => {
   assert.match(middleware, /install-page\.html\?raw/);
   assert.match(middleware, /virtual:grok-og-identity/);
   readFileSync(join(TEMPLATE_ROOT, "scripts/install-page.html"));
-  readFileSync(join(TEMPLATE_ROOT, "public/__grok/icon-180.png"));
-  readFileSync(join(TEMPLATE_ROOT, "public/__grok/install/styles.css"));
+  readFileSync(join(TEMPLATE_ROOT, "public/favicon.svg"));
 });
 
 test("vite plugin bakes og identity as a virtual module", () => {

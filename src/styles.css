@@ -2,41 +2,62 @@
 @import "tw-animate-css";
 
 @theme {
-  --color-background: #0c0c0d;
-  --color-foreground: #ece8df;
-  --color-card: #141416;
-  --color-card-foreground: #ece8df;
-  --color-muted: #1c1c20;
-  --color-muted-foreground: #9a958c;
-  --color-secondary: #1a1a1d;
-  --color-secondary-foreground: #ece8df;
-  --color-border: color-mix(in oklab, #ece8df 12%, transparent);
-  --color-primary: #d7d2c8;
-  --color-primary-foreground: #141416;
-  --color-accent: #8fbf9a;
-  --color-accent-foreground: #0c0c0d;
-  --color-ring: #8fbf9a;
-  --color-heat-0: #1c1c1f;
-  --color-heat-1: #1d3d32;
-  --color-heat-2: #2f6b54;
-  --color-heat-3: #4e9a73;
-  --color-heat-4: #9ad4b1;
+  --color-background: #0b0c0e;
+  --color-foreground: #ece9e2;
+  --color-card: #121417;
+  --color-card-foreground: #ece9e2;
+  --color-muted: #1b1e23;
+  --color-muted-foreground: #a3a19a;
+  --color-secondary: #171a1f;
+  --color-secondary-foreground: #ece9e2;
+  --color-border: color-mix(in oklab, #ece9e2 11%, transparent);
+  --color-primary: #e2dfd7;
+  --color-primary-foreground: #0b0c0e;
+  --color-accent: #7ecfa5;
+  --color-accent-foreground: #09130e;
+  --color-ring: #7ecfa5;
+  --color-heat-0: #1b1f26;
+  --color-heat-1: #0e3d28;
+  --color-heat-2: #176644;
+  --color-heat-3: #249b67;
+  --color-heat-4: #44d492;
+  --color-heat-5: #b8ffcf;
 
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans:
+    "Schibsted Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-display:
+    "Schibsted Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-2xl: 28px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 20px;
 
-  --shadow-border: 0 0 0 1px color-mix(in oklab, #ece8df 10%, transparent);
-  --shadow-border-hover: 0 0 0 1px color-mix(in oklab, #ece8df 18%, transparent);
+  --shadow-border:
+    0 0 0 1px color-mix(in oklab, #ece9e2 9%, transparent),
+    0 8px 24px -10px rgba(0, 0, 0, 0.5);
+  --shadow-border-hover:
+    0 0 0 1px color-mix(in oklab, #7ecfa5 32%, transparent),
+    0 12px 28px -10px rgba(0, 0, 0, 0.65);
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--color-accent) 28%, transparent);
+    color: var(--color-foreground);
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -45,26 +66,76 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     background: var(--color-background);
     color: var(--color-foreground);
+    caret-color: var(--color-accent);
+    color-scheme: dark;
   }
 
   body {
     min-height: 100dvh;
     font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    letter-spacing: -0.006em;
     background: var(--color-background);
     color: var(--color-foreground);
   }
 
-  h1,
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
   h2,
   h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
     text-wrap: balance;
   }
 
   p {
     text-wrap: pretty;
   }
+
+  a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-accent) 65%, transparent);
+    outline-offset: 2px;
+  }
+}
+
+/* Subtle dark scrollbar theming */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--color-foreground) 16%, transparent)
+    transparent;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

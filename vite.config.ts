@@ -150,6 +150,7 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    allowedHosts: true,
   },
   preview: {
     host: "127.0.0.1",
@@ -157,6 +158,15 @@ export default defineConfig(({ command, isPreview }) => ({
     strictPort: true,
   },
   resolve: { tsconfigPaths: true },
+  optimizeDeps: {
+    include: [
+      "@tanstack/router-core",
+      "@tanstack/router-core/isServer",
+      "@tanstack/router-core/ssr/client",
+      "seroval",
+      "date-fns",
+    ],
+  },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.

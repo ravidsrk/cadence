@@ -7,7 +7,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-secondary text-secondary-foreground",
-        accent: "bg-heat-2 text-primary-foreground",
+        accent: "bg-heat-4 font-semibold text-accent-foreground",
       },
     },
     defaultVariants: { variant: "default" },

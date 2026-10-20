@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { jsonResponse, parseYearParam } from "@/lib/github/http";
+import { apiErrorStatus, jsonResponse, parseYearParam } from "@/lib/github/http";
 import { todayIso } from "@/lib/github/load";
 import { isGithubFnError } from "@/lib/github/types";
 import { normalizeUsername } from "@/lib/github/username";
@@ -21,8 +21,8 @@ export const Route = createFileRoute("/api/calendar/$username")({
         });
         if (isGithubFnError(calendar)) {
           return jsonResponse(
-            calendar,
-            calendar.code === "not_found" ? 404 : 429,
+            { error: calendar.error, code: calendar.code },
+            apiErrorStatus(calendar.code),
           );
         }
         return jsonResponse({

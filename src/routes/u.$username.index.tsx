@@ -1,55 +1,151 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { CadenceApp } from "@/components/dashboard/cadence-app";
-import { cadenceError, isGithubFnError } from "@/lib/github/types";
+import {
+  createFileRoute,
+  notFound,
+  redirect,
+} from "@tanstack/react-router";
+import {
+  CadenceApp,
+  ProfileNotFoundView,
+  ProfilePageSkeleton,
+} from "@/components/dashboard/cadence-app";
+import { isGithubFnError } from "@/lib/github/types";
 import { loadCadence, todayIso } from "@/lib/github/load";
 import { validateCadenceSearch } from "@/lib/github/search";
 import { SITE_ORIGIN } from "@/lib/site";
-import { normalizeUsername } from "@/lib/github/username";
+import {
+  isReservedRoute,
+  normalizeUsername,
+  profilePath,
+  resolveSelectedDate,
+} from "@/lib/github/username";
 
 export const Route = createFileRoute("/u/$username/")({
   validateSearch: (search: Record<string, unknown>) =>
     validateCadenceSearch(search),
-  loaderDeps: ({ search }) => ({ d: search.d, y: search.y }),
+  beforeLoad: ({ params, search }) => {
+    if (params.username === "$username" || params.username === ":username") {
+      throw redirect({
+        to: "/$username",
+        params: { username: "ravidsrk" },
+        search,
+        replace: true,
+      });
+    }
+    if (!isReservedRoute(params.username)) {
+      const normalized =
+        normalizeUsername(params.username)?.toLowerCase() ?? params.username;
+      throw redirect({
+        to: "/$username",
+        params: { username: normalized },
+        search,
+        statusCode: 308,
+        replace: true,
+      });
+    }
+  },
+  loaderDeps: ({ search }) => ({
+    d: search.d,
+    range: search.range ?? search.y,
+    view: search.view,
+    skeleton: search.skeleton,
+  }),
   loader: async ({ params, deps }) => {
     const today = todayIso();
     const username = normalizeUsername(params.username);
     if (!username) {
-      const invalid = cadenceError("That is not a valid GitHub username.");
+      throw notFound({ data: { username: params.username } });
+    }
+    const year = deps.range;
+    const date = resolveSelectedDate(deps.d, year, today);
+    let data;
+    try {
+      data = await loadCadence({ username, today, date, year });
+    } catch {
       return {
         today,
-        username: params.username,
-        calendar: invalid,
-        commits: invalid,
+        username,
+        calendar: {
+          error: "Could not load the contribution calendar.",
+          code: "unavailable" as const,
+        },
+        commits: {
+          error: "Could not load that day from GitHub.",
+          code: "unavailable" as const,
+        },
       };
     }
-    const date =
-      deps.d && deps.d <= today && /^\d{4}-\d{2}-\d{2}$/.test(deps.d)
-        ? deps.d
-        : today;
-    let year = deps.y;
-    if (year && Number(date.slice(0, 4)) !== year) {
-      year = Number(date.slice(0, 4));
+    if (
+      isGithubFnError(data.calendar) &&
+      data.calendar.code === "not_found"
+    ) {
+      throw notFound({ data: { username: params.username } });
     }
-    return loadCadence({ username, today, date, year });
+    if (
+      !isGithubFnError(data.calendar) &&
+      data.calendar.profile.login !== params.username
+    ) {
+      throw redirect({
+        to: "/u/$username",
+        params: { username: data.calendar.profile.login },
+        search: {
+          ...(deps.d ? { d: deps.d } : {}),
+          ...(deps.range ? { range: deps.range } : {}),
+          ...(deps.view ? { view: deps.view } : {}),
+          ...(deps.skeleton ? { skeleton: deps.skeleton } : {}),
+        },
+        statusCode: 308,
+        replace: true,
+      });
+    }
+    return data;
   },
+  pendingMs: 0,
+  pendingComponent: ProfilePending,
+  notFoundComponent: ProfileNotFound,
   head: ({ params, loaderData }) => {
     const calendar = loaderData?.calendar;
     const profile =
       calendar && !isGithubFnError(calendar) ? calendar.profile : null;
-    const name = profile?.name || profile?.login || params.username;
+    const login = profile?.login ?? params.username;
+    const displayTitle = profile
+      ? profile.name
+        ? `${profile.name} (@${profile.login})`
+        : `@${profile.login}`
+      : `@${params.username}`;
+    const title = `${displayTitle} · Cadence`;
+    const total =
+      calendar && !isGithubFnError(calendar)
+        ? calendar.stats.total.toLocaleString("en-US")
+        : null;
     const streak =
       calendar && !isGithubFnError(calendar)
         ? calendar.stats.currentStreak
         : null;
+    const rangeLabel =
+      calendar &&
+      !isGithubFnError(calendar) &&
+      calendar.range.from.endsWith("-01-01") &&
+      calendar.range.from.slice(0, 4) === calendar.range.to.slice(0, 4)
+        ? calendar.range.from.slice(0, 4)
+        : "last 12 months";
     const description =
-      streak != null
-        ? `${name}'s public GitHub cadence — ${streak}-day streak.`
-        : `Public GitHub shipping cadence for ${name}.`;
-    const canonical = `${SITE_ORIGIN}/u/${encodeURIComponent(params.username)}`;
+      total != null && streak != null
+        ? `${total} contributions in the ${rangeLabel} · ${streak}-day streak`
+        : `Public GitHub shipping cadence for ${displayTitle}.`;
+    const canonical = `${SITE_ORIGIN}${profilePath(login)}`;
+    const cardImage = `${SITE_ORIGIN}/api/card/${encodeURIComponent(login)}.svg`;
     return {
       meta: [
-        { title: `${name} · Cadence` },
+        { title },
         { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: canonical },
+        { property: "og:image", content: cardImage },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: cardImage },
       ],
       links: [{ rel: "canonical", href: canonical }],
     };
@@ -66,7 +162,19 @@ function Profile() {
       initial={initial}
       routeUsername={normalizeUsername(username) ?? username}
       dateFromUrl={search?.d}
-      yearFromUrl={search?.y}
+      yearFromUrl={search?.range ?? search?.y}
+      viewFromUrl={search?.view}
+      forceSkeleton={search?.skeleton === 1}
     />
   );
+}
+
+function ProfilePending() {
+  const { username } = Route.useParams();
+  return <ProfilePageSkeleton username={username} />;
+}
+
+function ProfileNotFound() {
+  const { username } = Route.useParams();
+  return <ProfileNotFoundView username={username} />;
 }
