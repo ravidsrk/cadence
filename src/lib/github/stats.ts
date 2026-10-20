@@ -107,6 +107,16 @@ export function longestStreakWindow(
   return { start: bestStart, end: bestEnd, days: bestLen };
 }
 
+/** Contributions in the seven calendar days ending on the given date. */
+export function weekTotal(days: DayCount[], endingDate: string): number {
+  const start = addDays(endingDate, -6);
+  return days.reduce(
+    (sum, day) =>
+      day.date >= start && day.date <= endingDate ? sum + day.count : sum,
+    0,
+  );
+}
+
 export function computeStats(
   days: DayCount[],
   today: string,
@@ -116,11 +126,7 @@ export function computeStats(
   const total = days.reduce((sum, d) => sum + d.count, 0);
   const todayCount = byDate.get(today) ?? 0;
 
-  const weekStart = addDays(today, -6);
-  let week = 0;
-  for (const d of days) {
-    if (d.date >= weekStart && d.date <= today) week += d.count;
-  }
+  const week = weekTotal(days, today);
 
   const longestWin = longestStreakWindow(days);
   const longestStreak = longestWin?.days ?? 0;

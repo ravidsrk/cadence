@@ -24,6 +24,7 @@ import {
   computeStats,
   INTENSITY_THRESHOLDS,
   intensityLevelForCount,
+  weekTotal,
 } from "./stats.ts";
 import {
   isReservedRoute,
@@ -182,6 +183,45 @@ describe("weekday insights", () => {
     assert.equal(monFirst[0]?.label, "Mon");
     assert.equal(monFirst[6]?.label, "Sun");
     assert.equal(monFirst[6]?.count, 3);
+  });
+});
+
+describe("selected-date weekly totals", () => {
+  const days = Array.from({ length: 14 }, (_, i) => ({
+    date: `2026-10-${String(i + 1).padStart(2, "0")}`,
+    count: i < 7 ? i + 1 : 100,
+    level: 0,
+  }));
+
+  it("uses the selected week for rolling and current-year ranges", () => {
+    const latestStats = computeStats(days, "2026-10-14");
+    assert.equal(latestStats.week, 700);
+    assert.equal(weekTotal(days, "2026-10-07"), 28);
+    assert.equal(weekTotal(days, "2026-10-10"), 322);
+    assert.equal(weekTotal(days, "2026-10-14"), latestStats.week);
+  });
+
+  it("uses the selected week within a past-year range", () => {
+    const pastDays = days.map((day) => ({
+      ...day,
+      date: day.date.replace("2026", "2025"),
+    }));
+    assert.equal(weekTotal(pastDays, "2025-10-07"), 28);
+    assert.equal(weekTotal(pastDays, "2025-10-14"), 700);
+  });
+
+  it("handles year boundaries, partial ranges, and missing days", () => {
+    const sparseDays = [
+      { date: "2025-12-26", count: 500, level: 5 },
+      { date: "2025-12-27", count: 3, level: 1 },
+      { date: "2025-12-31", count: 5, level: 1 },
+      { date: "2026-01-02", count: 7, level: 1 },
+      { date: "2026-01-03", count: 900, level: 5 },
+    ];
+    assert.equal(weekTotal(sparseDays, "2026-01-02"), 15);
+    assert.equal(weekTotal(days, "2026-10-03"), 6);
+    assert.equal(weekTotal(days, "2026-09-30"), 0);
+    assert.equal(weekTotal([], "2026-10-07"), 0);
   });
 });
 
