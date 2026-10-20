@@ -10,13 +10,36 @@ import {
   installPreviewHostBridge,
 } from "@/lib/preview-host-bridge";
 
+function resolvePreviewBridgePath(rawPath: string): string {
+  let savedUser = "ravidsrk";
+  try {
+    const stored = window.localStorage.getItem("cadence:username")?.trim();
+    if (stored) savedUser = stored;
+  } catch {
+    // ignore
+  }
+  const year = String(new Date().getFullYear());
+  let resolved = rawPath
+    .replace(/\/\$username\/?(?=$|\?|#)/g, `/${savedUser}`)
+    .replace(/\/\$username\//g, `/${savedUser}/`)
+    .replace(/\/:username\/?(?=$|\?|#)/g, `/${savedUser}`)
+    .replace(/\/:username\//g, `/${savedUser}/`)
+    .replace(/\/\$year\/?(?=$|\?|#)/g, `/${year}`)
+    .replace(/\/:year\/?(?=$|\?|#)/g, `/${year}`)
+    .replace(/\/\$a\/\$b\/?(?=$|\?|#)/g, "/torvalds/yyx990803");
+  if (resolved.length > 1 && resolved.endsWith("/")) {
+    resolved = resolved.slice(0, -1);
+  }
+  return resolved;
+}
+
 export function PreviewHostBridge() {
   const router = useRouter();
 
   useEffect(() => {
     return installPreviewHostBridge({
       navigate: (path) => {
-        router.history.push(path);
+        router.history.push(resolvePreviewBridgePath(path));
       },
       getRoutePaths: () => collectRoutePathsFromTree(router.routeTree),
     });

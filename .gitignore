@@ -13,3 +13,5 @@ artifacts
 *.log
 .DS_Store
 .node_modules.lock
+# Local agent skill links
+.agent/skills/

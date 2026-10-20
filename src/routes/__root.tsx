@@ -6,7 +6,6 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
@@ -22,7 +21,7 @@ export const Route = createRootRoute({
         name: "description",
         content: SITE_DESCRIPTION,
       },
-      { name: "theme-color", content: "#0c0c0d" },
+      { name: "theme-color", content: "#0b0c0e" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -34,7 +33,7 @@ export const Route = createRootRoute({
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
@@ -64,13 +63,11 @@ function RootDocument() {
       </head>
       <body>
         <PreviewHostBridge />
-        <AuthProvider>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-              <Outlet />
-            </TooltipProvider>
-          </QueryClientProvider>
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Outlet />
+          </TooltipProvider>
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>

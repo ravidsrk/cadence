@@ -1,4 +1,5 @@
 import type { DayCommit, DayCount } from "./types";
+import { profilePath } from "./username.ts";
 
 export const WEEKDAY_LABELS = [
   "Sun",
@@ -33,6 +34,23 @@ export function weekdayTotals(days: DayCount[]): WeekdayRow[] {
     if (row) row.count += day.count;
   }
   return rows;
+}
+
+const MON_SUN_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
+
+export function orderWeekdaysMonFirst(rows: WeekdayRow[]): WeekdayRow[] {
+  if (rows.length === 0) return [];
+  const byDay = new Map(rows.map((r) => [r.weekday, r]));
+  const ordered: WeekdayRow[] = [];
+  for (const wd of MON_SUN_ORDER) {
+    const found = byDay.get(wd);
+    if (found) ordered.push(found);
+  }
+  return ordered.length === rows.length ? ordered : rows;
+}
+
+export function weekdayTotalsMonFirst(days: DayCount[]): WeekdayRow[] {
+  return orderWeekdaysMonFirst(weekdayTotals(days));
 }
 
 export function busiestWeekday(rows: WeekdayRow[]): WeekdayRow | null {
@@ -127,11 +145,17 @@ export function profilePermalink(input: {
   today: string;
   selectedDate: string;
   year?: number;
+  view?: "2d" | "3d";
 }): string {
-  const url = new URL(`/u/${encodeURIComponent(input.username)}`, input.origin);
-  if (input.selectedDate !== input.today) {
+  const url = new URL(profilePath(input.username), input.origin);
+  const defaultDate =
+    input.year && input.year < Number(input.today.slice(0, 4))
+      ? `${input.year}-12-31`
+      : input.today;
+  if (input.selectedDate !== defaultDate) {
     url.searchParams.set("d", input.selectedDate);
   }
-  if (input.year) url.searchParams.set("y", String(input.year));
+  if (input.year) url.searchParams.set("range", String(input.year));
+  if (input.view === "3d") url.searchParams.set("view", "3d");
   return url.toString();
 }

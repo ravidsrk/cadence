@@ -10,3 +10,8 @@ Live: [git-cadence.grok.me](https://git-cadence.grok.me)
 - [FAQ](./faq.md)
 
 The same docs ship in the app at [git-cadence.grok.me/docs](https://git-cadence.grok.me/docs).
+
+Product planning:
+
+- [Roadmap and GitHub work items](../ROADMAP.md)
+- [Product research and evidence limits](./research/2026-10-20-product-roadmap.md)

@@ -12,6 +12,13 @@ export function countCommits(input: {
       privateTotal: input.privateSeen,
     };
   }
+  if (input.privateSeen <= 0) {
+    return {
+      total,
+      publicTotal: total,
+      privateTotal: 0,
+    };
+  }
   return {
     total,
     publicTotal: input.publicSeen,

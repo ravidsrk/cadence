@@ -24,10 +24,12 @@ export function searchPageCount(
 export function mergedPullQueries(username: string, date: string): {
   opened: string;
   merged: string;
+  created: string;
 } {
   return {
     opened: `is:pr is:merged merged:${date} author:${username}`,
     merged: `is:pr is:merged merged:${date} merged-by:${username}`,
+    created: `is:pr created:${date} author:${username}`,
   };
 }
 

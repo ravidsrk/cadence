@@ -1,30 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BoardView } from "@/components/dashboard/board-view";
-import { parseBoardSort } from "@/lib/github/board";
+import {
+  parseBoardSort,
+  parseBoardWindow,
+  type BoardSearch,
+} from "@/lib/github/board";
 import { loadBoardPage } from "@/lib/github/load";
 import { SITE_ORIGIN } from "@/lib/site";
-
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+import { isValidIsoDate } from "@/lib/github/username";
 
 export const Route = createFileRoute("/board")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): BoardSearch => {
     const s = parseBoardSort(search.s);
+    const w = parseBoardWindow(search.w);
     const d =
-      typeof search.d === "string" && DATE_RE.test(search.d)
+      typeof search.d === "string" && isValidIsoDate(search.d)
         ? search.d
         : undefined;
-    if (d) return { d };
-    if (s !== "peak") return { s };
-    return {};
+    const out: BoardSearch = {};
+    if (w !== "12m") out.w = w;
+    if (d) {
+      out.d = d;
+      return out;
+    }
+    if (s !== "score" && s !== "day") out.s = s;
+    return out;
   },
-  loader: async () => loadBoardPage(),
+  loaderDeps: ({ search }) => ({ s: search.s, w: search.w }),
+  loader: async ({ deps }) =>
+    loadBoardPage({ sort: deps.s, window: deps.w }),
   head: () => ({
     meta: [
-      { title: "Biggest day · Cadence" },
+      { title: "Leaderboard · Cadence" },
       {
         name: "description",
         content:
-          "Who on the Cadence board had the most GitHub contributions in a single day.",
+          "Shipping leaderboard ranked by composite Cadence Score, consistency, streak, momentum, and volume across 7d, 30d, 90d, and 12m horizons.",
       },
     ],
     links: [{ rel: "canonical", href: `${SITE_ORIGIN}/board` }],
@@ -41,7 +52,11 @@ function BoardPage() {
     <BoardView
       entries={data.entries}
       max={data.max}
+      total={data.total}
+      hasMore={data.hasMore}
+      indexer={data.indexer}
       sort={search.s}
+      window={search.w}
       date={date}
       today={data.today}
     />

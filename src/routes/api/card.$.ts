@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { parseYearParam, svgResponse } from "@/lib/github/http";
+import { apiErrorStatus, parseYearParam, svgResponse } from "@/lib/github/http";
 import { todayIso } from "@/lib/github/load";
 import { isGithubFnError } from "@/lib/github/types";
 import { usernameFromSvgSplat } from "@/lib/github/username";
@@ -10,9 +10,14 @@ export const Route = createFileRoute("/api/card/$")({
       GET: async ({ params, request }) => {
         const username = usernameFromSvgSplat(params._splat);
         if (!username) {
-          return new Response("Invalid username", { status: 400 });
+          return new Response("Invalid username", {
+            status: 400,
+            headers: { "Cache-Control": "no-store" },
+          });
         }
-        const year = parseYearParam(new URL(request.url).searchParams.get("year"));
+        const url = new URL(request.url);
+        const year = parseYearParam(url.searchParams.get("year"));
+        const view = url.searchParams.get("view") === "2d" ? "2d" : "3d";
         const { fetchCalendar } = await import("@/lib/github/fetch.server");
         const { shareCardSvg } = await import("@/lib/github/svg");
         const calendar = await fetchCalendar({
@@ -22,10 +27,11 @@ export const Route = createFileRoute("/api/card/$")({
         });
         if (isGithubFnError(calendar)) {
           return new Response(calendar.error, {
-            status: calendar.code === "not_found" ? 404 : 429,
+            status: apiErrorStatus(calendar.code),
+            headers: { "Cache-Control": "no-store" },
           });
         }
-        return svgResponse(shareCardSvg(calendar));
+        return svgResponse(shareCardSvg(calendar, { view }));
       },
     },
   },

@@ -20,99 +20,119 @@ export const DOC_SECTIONS: DocSection[] = [
     blocks: [
       {
         type: "p",
-        text: "Cadence is a public GitHub shipping calendar. Look up any user, click a day, and share a permalink. It is read-only. There are no accounts.",
-      },
-      {
-        type: "p",
-        text: "It is not GitHub, not a score, and not a view into private repositories. Green squares can still include private work; the commit log never does.",
+        text: "Cadence is a visual-first GitHub shipping intelligence dashboard. Look up any builder, inspect their 3D isometric contribution skyline, evaluate their 4-Pillar Cadence Score (0–100), and compare head-to-head rivalries. It is 100% read-only with zero sign-in required.",
       },
       {
         type: "ul",
         items: [
-          "Home opens on a default public profile.",
-          `Every public GitHub user has a shareable page at ${SITE_ORIGIN}/u/{username}.`,
-          "Copy link from the header. Share opens X plus card, badge, and export.",
-          "Recap and Compare sit next to the profile, not in the header.",
-          "Compare two users with a year toggle, or open a year recap at /u/{username}/{year}.",
-          "The board ranks who had the most GitHub contributions in a single day, among opt-in public handles.",
+          `Every public GitHub builder has a shareable 3D dashboard at ${SITE_ORIGIN}/{username}.`,
+          "Press ⌘K (or Ctrl+K) from anywhere to open Quick Jump — type @username to inspect a builder or userA vs userB for an instant head-to-head comparison.",
+          "Switch seamlessly between the 3D Isometric Skyline, 2D Heatmap, or Split view.",
+          "Compare two builders side-by-side at /compare/{a}/{b} or open a full-year shipping recap at /{username}/{year}.",
+          "Compete on the multi-dimensional Leaderboard (/board) across Rolling Time Horizons (7D, 30D, 90D, 12M), Competitive League Tiers, and Ecosystem Language Cohort Leagues.",
         ],
       },
     ],
   },
   {
-    id: "lookup",
-    title: "Look up a profile",
+    id: "score",
+    title: "4-Pillar Cadence Score & Tiers",
     blocks: [
       {
         type: "p",
-        text: "Type a GitHub username, or paste a profile URL like github.com/gaearon. Cadence strips the host and loads the public graph.",
-      },
-      {
-        type: "ul",
-        items: [
-          "Load takes you to /u/{username} with today selected.",
-          "On the home page, the last username you loaded is remembered in this browser only.",
-          "Try the featured handles under the search field for a known-good public calendar.",
-        ],
-      },
-      {
-        type: "callout",
-        text: "A 404 means GitHub has no public user with that login. Rate-limit messages mean GitHub asked Cadence to wait — the heatmap may still work.",
-      },
-    ],
-  },
-  {
-    id: "day",
-    title: "The selected day",
-    blocks: [
-      {
-        type: "p",
-        text: "Click a heatmap square, use Pick day, or pass ?d=YYYY-MM-DD on a profile URL. Future dates are ignored.",
+        text: "Instead of ranking builders by raw single-day commit spikes, Cadence computes a balanced 0–100 Composite Cadence Score across four weighted pillars:",
       },
       {
         type: "dl",
         items: [
           {
-            term: "Merged pull requests",
-            def: "Every public pull request merged on that UTC day that this login opened or merged. GitHub search stops at 1,000.",
+            term: "Consistency (35 pts)",
+            def: "Active shipping days divided by total days in the selected window. Rewards builders who show up reliably all year.",
           },
           {
-            term: "Commits",
-            def: "Public and private commits authored that UTC day. The list shows public commits only. Private commits are counted and not shown. GitHub search stops at 1,000.",
+            term: "Streak Mastery (25 pts)",
+            def: "Blends longest consecutive contribution run (up to 15 pts, saturating at 60d) and live active streak (up to 10 pts, saturating at 30d).",
           },
           {
-            term: "GitHub contributions",
-            def: "The number on that square of GitHub’s contribution graph: commits, pull requests, reviews, and issues, including private work GitHub is allowed to count.",
+            term: "Momentum (20 pts)",
+            def: "Compares recent 30-day shipping velocity against the builder's 365-day baseline, plus active days in the last 7 days.",
+          },
+          {
+            term: "Volume (20 pts)",
+            def: "Log-damped total contributions (up to 12 pts) and log-damped peak day (up to 8 pts) so automated commit floods cannot game the board.",
           },
         ],
       },
       {
-        type: "callout",
-        text: "These two numbers often disagree. A green square with an empty log is normal: private repos, issues, reviews, and pull requests still count as contributions.",
-      },
-    ],
-  },
-  {
-    id: "map",
-    title: "Year map",
-    blocks: [
-      {
-        type: "p",
-        text: "The year map is GitHub’s contribution calendar, clipped to today. Last 12 months is the default. Switch to a calendar year with the year chips.",
+        type: "h3",
+        text: "Competitive League Tiers & Builder Archetypes",
       },
       {
         type: "ul",
         items: [
-          "Square darkness is relative to that user in the selected range, not GitHub’s global 0–4 scale.",
-          "Empty days stay empty. The darkest squares are the top quartile of that user’s non-zero days.",
-          "Selecting a year that does not contain the current day jumps the selection to 31 Dec of that year, or to today for the current year.",
+          "Apex Tier (85–100): Elite daily rhythm, sustained streak mastery, and top-decile output.",
+          "Diamond Tier (70–84): High-consistency shipper with strong active momentum.",
+          "Gold Tier (55–69): Reliable multi-week builder with solid shipping cadence.",
+          "Silver Tier (40–54): Regular contributor building long-term momentum.",
+          "Bronze Tier (0–39): Emerging cadence or focused burst shipper.",
+          "Builder Archetypes: Every profile is classified into Relentless, Surging, Marathon, Heavy, Striker, or Steady based on shipping rhythm.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "skyline",
+    title: "3D Skyline & Year Map",
+    blocks: [
+      {
+        type: "p",
+        text: "The 3D Skyline renders every week and day of your contribution calendar as an interactive isometric city. Extruded towers scale with daily output and glow on peak shipping days.",
+      },
+      {
+        type: "ul",
+        items: [
+          "Drag to orbit, use the tilt/rotate/zoom sliders, or tap a preset camera angle (Iso, Top, Front).",
+          "Press Play to watch a chronological week-by-week time-lapse of the year unfolding.",
+          "Square darkness and tower height are calibrated relative to that builder's own quartiles in the selected range.",
+          "Click any 3D tower or 2D square to inspect that day's commit split (public vs private) and merged pull requests.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "board",
+    title: "Leaderboard, Cohorts & treg Discovery",
+    blocks: [
+      {
+        type: "p",
+        text: "The Competitive Leaderboard (/board) ranks public builders by Composite Cadence Score, Consistency %, Active Streak, Volume, or Single-Day Peak.",
+      },
+      {
+        type: "dl",
+        items: [
+          {
+            term: "Rolling Time Horizons",
+            def: "Switch between 7D Sprint, 30D Monthly, 90D Quarter, and 12M Annual windows. Every pillar, streak, and 12-week trajectory ribbon recomputes dynamically.",
+          },
+          {
+            term: "Language Cohort Leagues",
+            def: "Filter the arena by ecosystem: Global Open, TypeScript, Python, Rust, or Go.",
+          },
+          {
+            term: "Trending Builders & Repos",
+            def: "Powered by treg live GitHub Trending discovery, inspect breakout developers and hottest repositories (Today / This Week / This Month) and draft them onto the board in one tap.",
+          },
+          {
+            term: "Shipped Portfolio & Stack",
+            def: "Every profile and leaderboard drawer surfaces the builder's top public repositories, star velocity, fork counts, and primary language stack.",
+          },
         ],
       },
     ],
   },
   {
     id: "metrics",
-    title: "Metrics",
+    title: "Visual Metrics",
     blocks: [
       {
         type: "dl",
@@ -122,257 +142,83 @@ export const DOC_SECTIONS: DocSection[] = [
             def: "Contribution count on today’s GitHub calendar day.",
           },
           {
-            term: "Streak",
-            def: "Consecutive days with at least one contribution, ending today. If today is empty, the run is allowed to end yesterday.",
+            term: "Streak & Barcode",
+            def: "Consecutive days with at least one contribution, ending today (or yesterday if today is still empty), paired with a 365-day visual streak barcode.",
           },
           {
-            term: "Longest",
-            def: "The longest consecutive contribution run inside the selected range.",
+            term: "Consistency Ring",
+            def: "Radial progress ring showing active shipping days over total days in range, plus intensity tier distribution (L1–L4).",
           },
           {
-            term: "Best day",
-            def: "The day in range with the highest contribution count.",
+            term: "Monthly Momentum",
+            def: "12-month bar chart highlighting seasonal shipping peaks and quiet periods.",
           },
           {
-            term: "Weekday rhythm",
-            def: "Contribution totals grouped by weekday of the GitHub calendar date. The busiest weekday is called out.",
+            term: "Weekday Rhythm",
+            def: "Contribution totals grouped by day of the week (Sun–Sat), calling out your peak shipping weekday.",
           },
           {
-            term: "Consistency",
-            def: "Share of days in range with at least one contribution.",
+            term: "Language Donut",
+            def: "Primary language distribution across the builder's top public repositories.",
           },
-          {
-            term: "Shipping days",
-            def: "Active days over days in range.",
-          },
-          {
-            term: "Typical day",
-            def: "Average contributions on days that were not empty.",
-          },
-          {
-            term: "This week",
-            def: "Contributions in the seven days ending today.",
-          },
-          {
-            term: "Last 14 days",
-            def: "Contribution volume for the two weeks ending on the selected day.",
-          },
-          {
-            term: "Hour strip",
-            def: "When public commits that day were authored, in your browser’s local time.",
-          },
-          {
-            term: "Repo mix",
-            def: "Public repositories that received those commits, capped at the busiest few.",
-          },
-          {
-            term: "Longest pause",
-            def: "Longest run of empty contribution days inside the selected range.",
-          },
-          {
-            term: "Current pause",
-            def: "Consecutive empty days ending today. Zero if today has a contribution.",
-          },
-          {
-            term: "Quietest month",
-            def: "Month in range with the fewest active days, ignoring stubs shorter than two weeks.",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "sharing",
-    title: "Sharing",
-    blocks: [
-      {
-        type: "p",
-        text: "Profile URLs are safe to send. They only encode a public username and optional date or year. Nothing private is in the link.",
-      },
-      {
-        type: "ul",
-        items: [
-          `${SITE_ORIGIN}/u/ravidsrk — that user’s last 12 months, today selected.`,
-          `${SITE_ORIGIN}/u/ravidsrk?d=2026-09-10 — same profile, that day selected.`,
-          `${SITE_ORIGIN}/u/ravidsrk?y=2025 — calendar year 2025.`,
-          `${SITE_ORIGIN}/u/ravidsrk/2025 — year recap for 2025.`,
-          `${SITE_ORIGIN}/compare/gaearon/yyx990803 — two calendars side by side.`,
-          `${SITE_ORIGIN}/compare/gaearon/yyx990803?y=2025 — the same pair for calendar year 2025.`,
-          "Copy link writes the current profile, day, and year to the clipboard.",
-          "Share copies export items and opens an X compose window with streak, range total, and the permalink.",
         ],
       },
     ],
   },
   {
     id: "export",
-    title: "Export, badge, embed, API",
+    title: "Embeds, Badges, SVG & API",
     blocks: [
       {
         type: "p",
-        text: "Share is on a loaded profile. It covers X, the share card, heatmap, CSV, README badge, and embed. All of these are the same public calendar Cadence already shows.",
+        text: "Every profile includes one-click exports for GitHub READMEs, personal sites, and social sharing:",
       },
       {
         type: "ul",
         items: [
-          "Share card downloads an SVG or PNG with name, streak, totals, and the heatmap.",
-          `README badge: ${SITE_ORIGIN}/api/badge/{username}.svg — streak, today, and range total.`,
-          `Heatmap SVG: ${SITE_ORIGIN}/api/heatmap/{username}.svg?year=2025`,
-          `JSON calendar: ${SITE_ORIGIN}/api/calendar/{username}`,
-          `Embed: iframe ${SITE_ORIGIN}/embed/{username} (optional ?y=2025).`,
-          "CSV and JSON downloads are the day rows for the selected range.",
+          `3D Skyline SVG: ${SITE_ORIGIN}/api/heatmap/{username}.svg?view=3d — live isometric SVG ready for GitHub READMEs.`,
+          `2D Heatmap SVG: ${SITE_ORIGIN}/api/heatmap/{username}.svg — classic calendar grid SVG (optional ?year=2025).`,
+          `Compact Streak Badge: ${SITE_ORIGIN}/api/badge/{username}.svg — live shield with current streak, today's count, and annual total.`,
+          `Interactive Iframe Embed: ${SITE_ORIGIN}/embed/{username} — interactive 3D/2D widget with League Tier and Cadence Score.`,
+          `JSON Calendar API: ${SITE_ORIGIN}/api/calendar/{username} — structured day-by-day contribution payload.`,
+          "High-res PNG & SVG Share Cards and raw CSV exports are available from the Export menu on any profile.",
         ],
       },
       {
         type: "callout",
-        text: "GitHub README image cache can lag a few minutes. The badge is public data with a short cache.",
-      },
-    ],
-  },
-  {
-    id: "recap",
-    title: "Year recap and compare",
-    blocks: [
-      {
-        type: "p",
-        text: "Recap is a calendar year: map, weekday rhythm, pauses, public repo languages, and GitHub search totals for commits vs pull requests. Languages are primary language on recently pushed public repos the user owns — not commit volume.",
-      },
-      {
-        type: "p",
-        text: "Compare loads two calendars. Switch Last 12 months or a calendar year; the strip on top names who leads on volume, streak, and consistency. Two heatmap fetches, so GitHub may rate-limit if you hammer it.",
-      },
-    ],
-  },
-  {
-    id: "board",
-    title: "Biggest day",
-    blocks: [
-      {
-        type: "p",
-        text: "The board ranks opt-in public GitHub profiles by the highest contribution count on a single day in the last 12 months. Pick a date to rank that day only. It is not every GitHub user — only handles someone added, capped at 24.",
-      },
-      {
-        type: "ul",
-        items: [
-          `${SITE_ORIGIN}/board — peak day in the last 12 months.`,
-          `${SITE_ORIGIN}/board?d=2026-09-14 — who on the board shipped the most that day.`,
-          "Peak, streak, and volume are still available as sorts.",
-          "Add a username on the board, or Add to board from a loaded profile.",
-        ],
-      },
-      {
-        type: "callout",
-        text: "The day count is GitHub’s contribution square for that date: commits, PRs, reviews, and issues, including private work GitHub is allowed to count.",
+        text: "Use the Interactive README & Embed Studio above to preview and copy Markdown or HTML snippets for any GitHub username.",
       },
     ],
   },
   {
     id: "keyboard",
-    title: "Keyboard",
+    title: "Keyboard Shortcuts",
     blocks: [
       {
         type: "ul",
         items: [
-          "← and → move the selected day along the calendar.",
-          "Home jumps to the first day in range. End jumps to the last.",
-          "Keys are ignored while typing in the username field.",
+          "⌘K or Ctrl+K opens the global Quick Jump command palette from any page.",
+          "← and → move the selected day along the contribution calendar.",
+          "Home jumps to the first day in range; End jumps to the most recent day.",
         ],
       },
     ],
   },
   {
     id: "data",
-    title: "Data and privacy",
+    title: "Data & Privacy",
     blocks: [
       {
         type: "p",
-        text: "Cadence only reads public GitHub data. It does not sign in as you, store profiles on a server, or write anything back to GitHub.",
+        text: "Cadence reads public GitHub data only. It never asks for OAuth tokens, never accesses private repositories, and stores custom board additions locally in your browser.",
       },
       {
         type: "ul",
         items: [
-          "Profile: GitHub users API.",
-          "Heatmap: GitHub’s public contribution calendar HTML, with a public JSON mirror as fallback.",
-          "Commit log: GitHub commit search for author:{login} author-date:{day}.",
-          "Lookups are cached for a few minutes so repeat views of the same user and day stay snappy.",
+          "Contribution Calendar: GitHub’s public contribution calendar HTML with automatic JSON mirror fallback.",
+          "Daily Commit & PR Split: GitHub REST search for author-date commits and merged pull requests on the selected UTC day.",
+          "Live Discovery & Portfolio: Powered by treg providers with automatic GitHub REST/Trending fallback and server-side caching.",
         ],
-      },
-      {
-        type: "h3",
-        text: "What stays in this browser",
-      },
-      {
-        type: "p",
-        text: "On the home page only, the last username you loaded is saved in localStorage so a refresh can reopen it. Profile URLs do not need that. Clear site data and it is gone.",
-      },
-      {
-        type: "h3",
-        text: "Time zones",
-      },
-      {
-        type: "p",
-        text: "Heatmap days follow GitHub’s contribution calendar. Commit search uses GitHub’s author-date as a UTC calendar day. A commit near midnight can land on different days in the two views. The hour strip converts authored timestamps to your local clock.",
-      },
-    ],
-  },
-  {
-    id: "limits",
-    title: "Limits",
-    blocks: [
-      {
-        type: "ul",
-        items: [
-          "Private repositories never appear in the commit log, even when they shade the heatmap.",
-          "Commit search can mark results incomplete. Cadence lists every public commit and merged pull request GitHub search returns for that day, up to 1,000 each.",
-          "GitHub rate limits unauthenticated traffic. If search is limited, the heatmap still tries to load.",
-          "Forks, bots, and unusual author emails can make search miss commits you still see on GitHub.",
-        ],
-      },
-    ],
-  },
-  {
-    id: "faq",
-    title: "FAQ",
-    blocks: [
-      {
-        type: "h3",
-        text: "Why don’t the two day counts match?",
-      },
-      {
-        type: "p",
-        text: "Contributions include pull requests, reviews, issues, and private work GitHub counts. The commit number includes public and private commits. Only public commits are listed.",
-      },
-      {
-        type: "h3",
-        text: "The square is green but the log is empty.",
-      },
-      {
-        type: "p",
-        text: "That usually means the contributions were private, or they were not commits (reviews, issues, pull requests). Cadence still shows the contribution count.",
-      },
-      {
-        type: "h3",
-        text: "Can I connect my GitHub account?",
-      },
-      {
-        type: "p",
-        text: "No. Cadence is public-only on purpose. Connecting an account would imply private data, and this product does not show that.",
-      },
-      {
-        type: "h3",
-        text: "Who can see a permalink I send?",
-      },
-      {
-        type: "p",
-        text: "Anyone with the URL. It is the same public graph GitHub already shows. Do not share a link if you do not want that day’s public commits forwarded.",
-      },
-      {
-        type: "h3",
-        text: "Is this an official GitHub product?",
-      },
-      {
-        type: "p",
-        text: "No. Cadence is an independent dashboard that reads public GitHub pages and APIs. Counts can lag or differ when GitHub changes those surfaces.",
       },
     ],
   },

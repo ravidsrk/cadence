@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/cron/index-board": { "maxDuration": 300 }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/index-board",
+      "schedule": "17 */3 * * *"
+    }
+  ]
+}

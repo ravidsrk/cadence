@@ -18,8 +18,11 @@ export type CalendarStats = {
   week: number;
   currentStreak: number;
   longestStreak: number;
+  longestStreakRange?: { start: string; end: string } | null;
   bestDay: { date: string; count: number } | null;
   activeDays: number;
+  priorTotal?: number | null;
+  priorPeriodLabel?: string | null;
 };
 
 export type CalendarPayload = {
@@ -57,6 +60,9 @@ export type DayCommitsPayload = {
   commits: DayCommit[];
   commitsError?: string;
   mergedTotal: number;
+  mergedPublicTotal?: number;
+  mergedPrivateTotal?: number;
+  openedPrsTotal: number;
   mergedIncomplete: boolean;
   merged: DayPull[];
   mergedError?: string;
@@ -64,7 +70,9 @@ export type DayCommitsPayload = {
 
 export type GithubFnError = {
   error: string;
-  code: "not_found" | "rate_limit" | "unavailable";
+  code: "not_found" | "organization" | "rate_limit" | "unavailable";
+  staleCalendar?: CalendarPayload;
+  staleUpdatedAt?: number;
 };
 
 export function isGithubFnError(value: unknown): value is GithubFnError {

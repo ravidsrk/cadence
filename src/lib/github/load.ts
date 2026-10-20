@@ -8,9 +8,9 @@ import type {
 } from "./types";
 
 export function todayIso(now = new Date()): string {
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(now.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -46,8 +46,11 @@ export async function loadCalendarOnly(input: {
   });
 }
 
-export async function loadBoardPage() {
-  return getBoard();
+export async function loadBoardPage(input?: {
+  sort?: "score" | "peak" | "day" | "streak" | "consistency" | "volume" | "active" | "momentum";
+  window?: "7d" | "30d" | "90d" | "12m";
+}) {
+  return getBoard({ data: input });
 }
 
 export type RecapLoaderData = {

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { CompareView } from "@/components/dashboard/compare-view";
 import { cadenceError } from "@/lib/github/types";
 import { loadCalendarOnly, todayIso } from "@/lib/github/load";
@@ -9,6 +9,24 @@ import { normalizeUsername } from "@/lib/github/username";
 export const Route = createFileRoute("/compare/$a/$b")({
   validateSearch: (search: Record<string, unknown>) =>
     validateComparePairSearch(search),
+  beforeLoad: ({ params, search }) => {
+    if (
+      params.a === "$a" ||
+      params.a === ":a" ||
+      params.b === "$b" ||
+      params.b === ":b"
+    ) {
+      throw redirect({
+        to: "/compare/$a/$b",
+        params: {
+          a: params.a === "$a" || params.a === ":a" ? "torvalds" : params.a,
+          b: params.b === "$b" || params.b === ":b" ? "yyx990803" : params.b,
+        },
+        search,
+        replace: true,
+      });
+    }
+  },
   loaderDeps: ({ search }) => ({ y: search.y }),
   loader: async ({ params, deps }) => {
     const today = todayIso();

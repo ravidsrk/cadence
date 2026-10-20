@@ -2,7 +2,7 @@
 
 Public GitHub shipping calendar. Look up any user, click a day, share a permalink.
 
-**Live:** [git-cadence.grok.me](https://git-cadence.grok.me) · [ravidsrk](https://git-cadence.grok.me/u/ravidsrk) · [2026 recap](https://git-cadence.grok.me/u/ravidsrk/2026) · [Biggest day](https://git-cadence.grok.me/board) · [Docs](https://git-cadence.grok.me/docs)
+**Live:** [git-cadence.grok.me](https://git-cadence.grok.me) · [ravidsrk](https://git-cadence.grok.me/u/ravidsrk) · [2026 recap](https://git-cadence.grok.me/u/ravidsrk/2026) · [Leaderboard](https://git-cadence.grok.me/board) · [Docs](https://git-cadence.grok.me/docs)
 
 README badge:
 
@@ -22,6 +22,14 @@ Private work can still fill heatmap squares without appearing in the commit log.
 - [Metrics](./docs/metrics.md)
 - [Data and privacy](./docs/data.md)
 - [FAQ](./docs/faq.md)
+
+## Product planning
+
+- [Roadmap and delivery milestones](./ROADMAP.md)
+- [GitHub, X, and research-paper review — October 2026](./docs/research/2026-10-20-product-roadmap.md)
+- [Product context](./PRODUCT.md) and [design decisions](./DESIGN.md)
+
+The roadmap distinguishes implemented foundations from planned correctness, coverage, history, and weekly-use improvements. GitHub issue links and release gates live in the roadmap.
 
 The same docs are at [git-cadence.grok.me/docs](https://git-cadence.grok.me/docs).
 
