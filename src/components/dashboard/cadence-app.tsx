@@ -1173,6 +1173,41 @@ export function CadenceApp({
           })()
         )}
 
+        {commits ? (
+          <div className="mt-5 grid grid-cols-1 gap-4 border-t border-border pt-4 lg:grid-cols-2">
+            <DayList
+              title="Commits"
+              note={
+                commits.privateTotal > 0
+                  ? `${formatCount(commits.commits.length)} public listed · ${formatCount(commits.privateTotal)} private counted`
+                  : `${formatCount(commits.commits.length)} public`
+              }
+              empty="No public commits on this day."
+              rows={commits.commits.map((commit) => ({
+                key: `${commit.repo}-${commit.sha}`,
+                href: commit.htmlUrl,
+                title: commit.message,
+                meta: `${commit.repo} · ${commit.sha}`,
+              }))}
+            />
+            <DayList
+              title="Pull requests merged"
+              note={
+                (commits.mergedPrivateTotal ?? 0) > 0
+                  ? `${formatCount(commits.merged.length)} public listed · ${formatCount(commits.mergedPrivateTotal ?? 0)} private counted`
+                  : `${formatCount(commits.merged.length)} public`
+              }
+              empty="No public pull requests merged on this day."
+              rows={commits.merged.map((pull) => ({
+                key: pull.htmlUrl,
+                href: pull.htmlUrl,
+                title: pull.title,
+                meta: `${pull.repo} · #${pull.number} · ${pull.role === "opened" ? "opened" : "merged"}`,
+              }))}
+            />
+          </div>
+        ) : null}
+
         <div
           data-section="last-14-days"
           className="mt-5 border-t border-border pt-4"
@@ -1329,6 +1364,53 @@ export function CadenceApp({
           </Link>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function DayList({
+  title,
+  note,
+  empty,
+  rows,
+}: {
+  title: string;
+  note: string;
+  empty: string;
+  rows: Array<{ key: string; href: string; title: string; meta: string }>;
+}) {
+  return (
+    <div>
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <h3 className="font-display text-base">{title}</h3>
+        <span className="font-mono text-xs text-muted-foreground tabular-nums">
+          {note}
+        </span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{empty}</p>
+      ) : (
+        <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
+          {rows.map((row) => (
+            <li key={row.key}>
+              <a
+                href={row.href}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "block rounded-xl bg-secondary/60 p-3 shadow-[var(--shadow-border)]",
+                  "transition-[background-color] duration-150 ease-out hover:bg-secondary",
+                )}
+              >
+                <p className="text-sm leading-snug text-pretty">{row.title}</p>
+                <p className="mt-1 font-mono text-xs text-muted-foreground">
+                  {row.meta}
+                </p>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

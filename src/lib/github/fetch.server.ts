@@ -14,7 +14,9 @@ import { isValidIsoDate } from "./username";
 import type {
   ActivitySplit,
   CalendarPayload,
+  DayCommit,
   DayCommitsPayload,
+  DayPull,
   GithubFnError,
   GithubProfile,
   LanguageMixItem,
@@ -657,7 +659,11 @@ function issueSearchUrl(query: string, page: number): string {
 
 type GraphqlPullNode = {
   url?: string;
-  repository?: { isPrivate?: boolean };
+  number?: number;
+  title?: string;
+  mergedAt?: string | null;
+  author?: { login?: string } | null;
+  repository?: { isPrivate?: boolean; nameWithOwner?: string };
 };
 
 type GraphqlDayPullsResponse = {
@@ -677,6 +683,7 @@ async function fetchDayPullsGraphql(
   mergedPrivateTotal: number;
   openedPrsTotal: number;
   incomplete: boolean;
+  merged: DayPull[];
 } | null> {
   const token = githubToken();
   if (!token) return null;
@@ -688,7 +695,11 @@ async function fetchDayPullsGraphql(
         nodes {
           ... on PullRequest {
             url
-            repository { isPrivate }
+            number
+            title
+            mergedAt
+            author { login }
+            repository { isPrivate nameWithOwner }
           }
         }
       }
@@ -697,7 +708,11 @@ async function fetchDayPullsGraphql(
         nodes {
           ... on PullRequest {
             url
-            repository { isPrivate }
+            number
+            title
+            mergedAt
+            author { login }
+            repository { isPrivate nameWithOwner }
           }
         }
       }
@@ -731,19 +746,17 @@ async function fetchDayPullsGraphql(
     if (!body.data?.mergedAuthor || !body.data?.mergedBy || !body.data?.createdAll) {
       return null;
     }
-    const seen = new Map<string, boolean>();
+    const seen = new Map<string, GraphqlPullNode>();
     for (const node of [
       ...(body.data.mergedAuthor.nodes ?? []),
       ...(body.data.mergedBy.nodes ?? []),
     ]) {
-      if (node?.url && !seen.has(node.url)) {
-        seen.set(node.url, Boolean(node.repository?.isPrivate));
-      }
+      if (node?.url && !seen.has(node.url)) seen.set(node.url, node);
     }
     let pubSeen = 0;
     let privSeen = 0;
-    for (const isPriv of seen.values()) {
-      if (isPriv) privSeen += 1;
+    for (const node of seen.values()) {
+      if (node.repository?.isPrivate) privSeen += 1;
       else pubSeen += 1;
     }
     const authorCount = body.data.mergedAuthor.issueCount ?? 0;
@@ -758,12 +771,30 @@ async function fetchDayPullsGraphql(
       publicSeen: pubSeen,
       privateSeen: privSeen,
     });
+    const merged: DayPull[] = [];
+    const login = username.toLowerCase();
+    for (const [url, node] of seen) {
+      if (node.repository?.isPrivate) continue;
+      const repoMatch = url.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/);
+      const author = node.author?.login ?? "";
+      merged.push({
+        number: node.number ?? Number(repoMatch?.[3] ?? 0),
+        title: (node.title ?? "Pull request").slice(0, 160),
+        htmlUrl: url,
+        repo:
+          node.repository?.nameWithOwner ??
+          (repoMatch ? `${repoMatch[1]}/${repoMatch[2]}` : "repository"),
+        mergedAt: node.mergedAt ?? `${date}T00:00:00Z`,
+        role: author.toLowerCase() === login ? "opened" : "merged",
+      });
+    }
     return {
       mergedTotal: counted.total,
       mergedPublicTotal: counted.publicTotal,
       mergedPrivateTotal: counted.privateTotal,
       openedPrsTotal: body.data.createdAll.issueCount ?? 0,
       incomplete: !bothComplete,
+      merged,
     };
   } catch {
     return null;
@@ -778,14 +809,12 @@ export async function fetchDayCommits(input: {
   const lower = username.toLowerCase();
   try {
     return await cached(
-      `day:v10:${lower}:${date}`,
+      `day:v11:${lower}:${date}`,
       async () => {
         const queries = mergedPullQueries(username, date);
         const [commitsRes, gqlPulls] = await Promise.all([
-          searchPages<SearchCommit>(
-            (page) =>
-              commitSearchUrl(`author:${username} author-date:${date}`, page),
-            1,
+          searchPages<SearchCommit>((page) =>
+            commitSearchUrl(`author:${username} author-date:${date}`, page),
           ),
           fetchDayPullsGraphql(username, date),
         ]);
@@ -794,6 +823,7 @@ export async function fetchDayCommits(input: {
           commitsRes.status === 403 || commitsRes.status === 429;
         const commitsFailed =
           commitsRes.status >= 400 && commitsRes.status !== 422;
+        const commits: DayCommit[] = [];
         const seen = new Set<string>();
         let publicSeen = 0;
         let privateSeen = 0;
@@ -806,6 +836,22 @@ export async function fetchDayCommits(input: {
             continue;
           }
           publicSeen += 1;
+          const htmlUrl = item.html_url ?? "";
+          const repoMatch = htmlUrl.match(
+            /github\.com\/([^/]+)\/([^/]+)\/commit\//,
+          );
+          const message =
+            (item.commit?.message ?? "").split("\n")[0]?.trim() ?? "";
+          commits.push({
+            sha: sha.slice(0, 7),
+            message: message.slice(0, 160) || "Commit",
+            htmlUrl,
+            repo:
+              item.repository?.full_name ??
+              (repoMatch ? `${repoMatch[1]}/${repoMatch[2]}` : "repository"),
+            authoredAt: item.commit?.author?.date ?? `${date}T00:00:00Z`,
+            authorName: item.commit?.author?.name ?? username,
+          });
         }
         const counted = countCommits({
           reportedTotal: commitsFailed ? 0 : commitsRes.total,
@@ -820,7 +866,7 @@ export async function fetchDayCommits(input: {
             publicTotal: counted.publicTotal,
             privateTotal: counted.privateTotal,
             incomplete: commitsRes.incomplete,
-            commits: [],
+            commits,
             commitsError: commitsLimited
               ? "GitHub commit search is rate-limited. The heatmap still works."
               : commitsFailed
@@ -831,22 +877,19 @@ export async function fetchDayCommits(input: {
             mergedPrivateTotal: gqlPulls.mergedPrivateTotal,
             openedPrsTotal: gqlPulls.openedPrsTotal,
             mergedIncomplete: gqlPulls.incomplete,
-            merged: [],
+            merged: gqlPulls.merged,
           };
         }
 
         const [openedRes, mergedRes, createdRes] = await Promise.all([
-          searchPages<SearchPullItem>(
-            (page) => issueSearchUrl(queries.opened, page),
-            1,
+          searchPages<SearchPullItem>((page) =>
+            issueSearchUrl(queries.opened, page),
           ),
-          searchPages<SearchPullItem>(
-            (page) => issueSearchUrl(queries.merged, page),
-            1,
+          searchPages<SearchPullItem>((page) =>
+            issueSearchUrl(queries.merged, page),
           ),
-          searchPages<SearchPullItem>(
-            (page) => issueSearchUrl(queries.created, page),
-            1,
+          searchPages<SearchPullItem>((page) =>
+            issueSearchUrl(queries.created, page),
           ),
         ]);
 
@@ -887,7 +930,7 @@ export async function fetchDayCommits(input: {
           publicTotal: counted.publicTotal,
           privateTotal: counted.privateTotal,
           incomplete: commitsRes.incomplete,
-          commits: [],
+          commits,
           commitsError: commitsLimited
             ? "GitHub commit search is rate-limited. The heatmap still works."
             : commitsFailed
@@ -899,7 +942,7 @@ export async function fetchDayCommits(input: {
           openedPrsTotal: createdTotal,
           mergedIncomplete:
             !bothComplete || openedRes.incomplete || mergedRes.incomplete,
-          merged: [],
+          merged,
           mergedError: mergedLimited
             ? "GitHub PR search is rate-limited."
             : mergedFailed

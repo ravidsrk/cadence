@@ -5,6 +5,7 @@ export type SearchPullItem = {
   title?: string;
   html_url?: string;
   user?: { login?: string };
+  repository?: { private?: boolean; full_name?: string };
   pull_request?: { merged_at?: string | null };
 };
 
@@ -44,6 +45,7 @@ export function parseMergedPulls(
   for (const item of items) {
     const htmlUrl = item.html_url ?? "";
     if (!htmlUrl || seen.has(htmlUrl)) continue;
+    if (item.repository?.private) continue;
     seen.add(htmlUrl);
     const repoMatch = htmlUrl.match(/github\.com\/([^/]+)\/([^/]+)\/pull\//);
     const author = item.user?.login ?? "";
@@ -51,7 +53,9 @@ export function parseMergedPulls(
       number: item.number ?? 0,
       title: (item.title ?? "Pull request").slice(0, 160),
       htmlUrl,
-      repo: repoMatch ? `${repoMatch[1]}/${repoMatch[2]}` : "repository",
+      repo:
+        item.repository?.full_name ??
+        (repoMatch ? `${repoMatch[1]}/${repoMatch[2]}` : "repository"),
       mergedAt: item.pull_request?.merged_at ?? `${date}T00:00:00Z`,
       role: author.toLowerCase() === login ? "opened" : "merged",
     });
